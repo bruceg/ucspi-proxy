@@ -160,8 +160,6 @@ static void parse_header(buffer_list* buffers)
     left -= nl + 1 - data;
     data = nl + 1;
   }
-  /* DEBUG2("content_html=%d content_length=%ld\n",
-     content_html, content_length); */
 }
 
 static char* find_replacement(char* ptr, size_t left, replacement** repl)
@@ -254,8 +252,6 @@ static void filter_server_data(char* data, ssize_t size)
   const char* tmp;
   
   for (used=0, ptr=data, left=size; left; left-=used, ptr+=used) {
-    DEBUG4("state=%d left=%u *ptr=%u cleft=%u", state, left,
-	   *(unsigned char*)ptr, content_left);
     used = 1;			/* Use up one byte by default */
     switch (state) {
     case 0:			/* In header, looing for CR */
@@ -300,7 +296,6 @@ static void filter_server_data(char* data, ssize_t size)
 	used = left;
       break;
     }
-    DEBUG2("used=%u next=%d", used, state);
   }
   /* Add any remaining data to the buffer chain before returning */
   if (size) {

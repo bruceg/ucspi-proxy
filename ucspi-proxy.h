@@ -15,24 +15,6 @@ typedef int bool;
 typedef void (*filter_fn)(char*, ssize_t);
 typedef void (*eof_fn)(void);
 
-#ifdef DEBUG
-#define DEBUGG(ARGS) {fprintf ARGS;}
-#else
-#define DEBUGG(ARGS) do{}while(0)
-#endif
-#define DEBUG0(S) DEBUGG((stderr, "%s: " S "\n",program))
-#define DEBUG1(S,A) DEBUGG((stderr, "%s: " S "\n",program,A))
-#define DEBUG2(S,A,B) DEBUGG((stderr, "%s: " S "\n",program,A,B))
-#define DEBUG3(S,A,B,C) DEBUGG((stderr, "%s: " S "\n",program,A,B,C))
-#define DEBUG4(S,A,B,C,D) DEBUGG((stderr, "%s: " S "\n",program,A,B,C,D))
-
-#define MSGG(ARGS) if(opt_verbose){fprintf ARGS;}
-#define MSG0(S) MSGG((stderr, "[%d] %s: " S "\n",pid,program))
-#define MSG1(S,A) MSGG((stderr, "[%d] %s: " S "\n",pid,program,A))
-#define MSG2(S,A,B) MSGG((stderr, "[%d] %s: " S "\n",pid,program,A,B))
-#define MSG3(S,A,B,C) MSGG((stderr, "[%d] %s: " S "\n",pid,program,A,B,C))
-#define MSG4(S,A,B,C,D) MSGG((stderr, "[%d] %s: " S "\n",pid,program,A,B,C,D))
-
 /* Functions and globals declared by the filter */
 extern const char program[];
 extern const char filter_usage[];

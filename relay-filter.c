@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <msg/msg.h>
 #include "ucspi-proxy.h"
 
 static unsigned relay_rerun_delay;
@@ -30,7 +31,7 @@ static void catch_alarm(int ignored)
   if (relay_command == 0)
     return;
   /* Run the relay-ctrl process, and then set it up to re-run */
-  fprintf(stderr, "%s: Running relay-ctrl-allow\n", program);
+  msg1("Running relay-ctrl-allow");
   run_relay_ctrl();
   signal(SIGALRM, catch_alarm);
   alarm(relay_rerun_delay);
@@ -55,11 +56,9 @@ void relay_init(int argc, char* argv[])
 void accept_client(const char* username)
 {
   if (username)
-    fprintf(stderr, "%s: Accepted relay client %s, username '%s'\n",
-	    program, client_ip, username);
+    msg5("Accepted relay client ", client_ip, ", username '", username, "'");
   else
-    fprintf(stderr, "%s: Accepted relay client %s, unknown username\n",
-	    program, client_ip);
+    msg3("Accepted relay client ", client_ip, ", username unknown");
   
   /* Turn off all further filtering, as this IP has already authenticated */
   del_filter(CLIENT_IN);
@@ -73,9 +72,7 @@ void accept_client(const char* username)
 void deny_client(const char* username)
 {
   if (username)
-    fprintf(stderr, "%s: Failed login from %s, username '%s'\n",
-	    program, client_ip, username);
+    msg5("Failed login from ", client_ip, ", username '", username, "'");
   else
-    fprintf(stderr, "%s: Failed login from %s, unknown username\n",
-	    program, client_ip);
+    msg3("Failed login from ", client_ip, ", username unknown");
 }

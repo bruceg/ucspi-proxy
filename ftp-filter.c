@@ -6,6 +6,8 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <msg/msg.h>
+#include <misc/utoa.h>
 #include "ucspi-proxy.h"
 
 static bool was_pasv = false;	/* Last command was "PASV" */
@@ -55,9 +57,22 @@ static void format_local_address(const char* prefix, const char* suffix)
 {
   unsigned ip = ntohl(locaddr.sin_addr.s_addr);
   unsigned port = ntohs(locaddr.sin_port);
-  sprintf(buf, "%s%u,%u,%u,%u,%u,%u%s", prefix,
-	  (ip>>24)&0xff, (ip>>16)&0xff, (ip>>8)&0xff, ip&0xff,
-	  (port>>8)&0xff, port&0xff, suffix);
+  unsigned len;
+  unsigned i;
+  len = strlen(prefix);
+  memcpy(buf, prefix, len); i = len;
+  len += fmt_udec(buf+len, (ip>>24)&0xff);
+  buf[len++] = ',';
+  len += fmt_udec(buf+len, (ip>>16)&0xff);
+  buf[len++] = ',';
+  len += fmt_udec(buf+len, (ip>>8)&0xff);
+  buf[len++] = ',';
+  len += fmt_udec(buf+len, ip&0xff);
+  buf[len++] = ',';
+  len += fmt_udec(buf+len, (port>>8)&0xff);
+  buf[len++] = ',';
+  len += fmt_udec(buf+len, port&0xff);
+  strcpy(buf+len, suffix);
 }
 
 static bool make_local_socket(void)
@@ -109,7 +124,7 @@ static void write_local(char* data, ssize_t size)
 static void copy_eof(void)
 {
   if(opt_verbose)
-    fprintf(stderr, "%s: copied %d bytes\n", program, copied);
+    msg3("copied ", utoa(copied), " bytes");
   close_sockets();
 }
 
@@ -178,7 +193,7 @@ static void handle_pasv_response(char* data, ssize_t size)
 
 static void filter_client_data(char* data, ssize_t size)
 {
-  fprintf(stderr, "Client: %s", data);
+  msg2("Client: ", data);
   if(cmp_command(data, "PORT"))
     handle_port_command(data, size);
   else if(cmp_command(data, "PASV")) {
@@ -207,7 +222,7 @@ static void filter_client_data(char* data, ssize_t size)
 
 static void filter_server_data(char* data, ssize_t size)
 {
-  fprintf(stderr, "Server: %s", data);
+  msg2("Server: ", data);
   if(was_pasv)
     handle_pasv_response(data, size);
   else

@@ -6,6 +6,9 @@
 #include <string.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <fmt/number.h>
+#include <iobuf/iobuf.h>
+#include <msg/msg.h>
 #include <str/str.h>
 #include "ucspi-proxy.h"
 
@@ -67,6 +70,13 @@ bool del_filter(int fd)
   return false;
 }
 
+static void msg2n(const char* a, unsigned long b)
+{
+  char num[FMT_ULONG_LEN];
+  num[fmt_udec(num, b)] = 0;
+  msg2(a, num);
+}
+
 static void handle_fd(struct filter_node* filter)
 {
   char buf[BUFSIZE+1];
@@ -74,11 +84,11 @@ static void handle_fd(struct filter_node* filter)
   if(rd == -1) {
     if (errno == EAGAIN || errno == EINTR)
       return;
-    MSG1("Error encountered on FD %d", filter->fd);
+    if (opt_verbose) msg2n("Error encountered on FD ", filter->fd);
     exit(1);
   }
   if(rd == 0) {
-    MSG1("EOF on FD %d", filter->fd);
+    if (opt_verbose) msg2n("EOF on FD ", filter->fd);
     if(filter->at_eof)
       filter->at_eof();
     else
@@ -96,10 +106,10 @@ void write_client(const char* data, ssize_t size)
     ssize_t wr = write(CLIENT_OUT, data, size);
     switch(wr) {
     case 0:
-      MSG0("Short write to client");
+      if (opt_verbose) msg1("Short write to client");
       exit(1);
     case -1:
-      MSG0("Write to client failed");
+      if (opt_verbose) msg1("Write to client failed");
       exit(1);
     default:
       data += wr;
@@ -117,7 +127,7 @@ void writes_client(const char* data)
 void write_server(const char* data, ssize_t size)
 {
   if(write(SERVER_FD, data, size) != size) {
-    MSG0("Short write to server");
+    if (opt_verbose) msg1("Short write to server");
     exit(1);
   }
   bytes_server += size;
@@ -130,16 +140,23 @@ void writes_server(const char* data)
 
 static void exitfn(void)
 {
-  MSG2("client %d server %d", bytes_client, bytes_server);
+  if (opt_verbose) {
+    char num1[FMT_ULONG_LEN];
+    char num2[FMT_ULONG_LEN];
+    num1[fmt_udec(num1, bytes_client)] = 0;
+    num2[fmt_udec(num2, bytes_server)] = 0;
+    msg4("client ", num1, " server ", num2);
+  }
   filter_deinit();
 }
 
 void usage(const char* message)
 {
   if(message)
-    fprintf(stderr, "%s: %s\n", program, message);
-  fprintf(stderr, "usage: %s [-v] [-t timeout] host port %s\n",
-	  program, filter_usage);
+    msg1(message);
+  obuf_put4s(&errbuf, "usage: ", program,
+	     " [-v] [-t timeout] host port ", filter_usage);
+  obuf_endl(&errbuf);
   exit(1);
 }
 
