@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <msg/msg.h>
+#include <net/resolve.h>
 #include <net/socket.h>
 #include <unix/nonblock.h>
 #include "ucspi-proxy.h"
@@ -25,9 +26,16 @@ int tcp_connect(void)
   }
   if (timeout == 0) timeout = 30;
 
-  if ((tmp = getenv("PROXY_CONNECT_ADDR")) == 0) tmp = "0";
-  if (!ipv4_parse(tmp, &addr, &end) || *end != 0)
-    die3(111, "Could not parse IP address '", tmp, "'");
+  if ((tmp = getenv("PROXY_CONNECT_HOST")) != 0) {
+    if (!resolve_ipv4name(tmp, &addr))
+      die3(111, "Could not resolve, '", tmp, "'");
+  }
+  else if ((tmp = getenv("PROXY_CONNECT_ADDR")) != 0) {
+    if (!ipv4_parse(tmp, &addr, &end) || *end != 0)
+      die3(111, "Could not parse IP address '", tmp, "'");
+  }
+  else
+    die1(111, "No host specified to connect to");
   if ((tmp = getenv("PROXY_CONNECT_PORT")) == 0)
     die1(111, "$PROXY_CONNECT_PORT is not set");
   if ((port = strtol(tmp, (char**)&end, 10)) <= 0 ||
