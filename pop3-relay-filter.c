@@ -1,5 +1,6 @@
 #include <string.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include "ucspi-proxy.h"
 
@@ -7,12 +8,21 @@ static bool saw_pass = 0;
 
 static void accept_ip(void)
 {
-  write(2, "Login\n", 6);
+  pid_t pid = fork();
+  switch(pid) {
+  case -1:
+    return;
+  case 0:
+    execlp("relay-ctrl-allow", "relay-ctrl-allow", 0);
+    exit(1);
+  default:
+    waitpid(pid, 0, 0);
+  }
 }
 
 static void filter_client_data(char* data, ssize_t size)
 {
-  if(!strncasecmp(data, "PASS ", size))
+  if(!strncasecmp(data, "PASS ", 5))
     saw_pass = 1;
   write_server(data, size);
 }
@@ -20,7 +30,7 @@ static void filter_client_data(char* data, ssize_t size)
 static void filter_server_data(char* data, ssize_t size)
 {
   if(saw_pass) {
-    if(strncasecmp(data, "OK ", size))
+    if(!strncasecmp(data, "+OK ", 4))
       accept_ip();
     saw_pass = 0;
   }
