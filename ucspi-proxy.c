@@ -11,9 +11,6 @@ static ssize_t bytes_client = 0;
 static ssize_t bytes_server = 0;
 bool opt_verbose = false;
 
-#define DEBUG0(MSG) if(opt_verbose){fprintf(stderr,"%s: " MSG "\n",filter_name);}
-#define DEBUG1(MSG,ARG) if(opt_verbose){fprintf(stderr,"%s: " MSG "\n",filter_name,ARG);}
-
 struct filter_node
 {
   int fd;
@@ -67,16 +64,15 @@ static void handle_fd(struct filter_node* filter)
   char buf[BUFSIZE+1];
   ssize_t rd = read(filter->fd, buf, BUFSIZE);
   if(rd == -1) {
-    DEBUG1("Error encountered on FD %d", filter->fd);
+    MSG1("Error encountered on FD %d", filter->fd);
     exit(1);
   }
   if(rd == 0) {
+    MSG1("EOF on FD %d", filter->fd);
     if(filter->at_eof)
       filter->at_eof();
-    else {
-      DEBUG1("EOF on FD %d", filter->fd);
+    else
       exit(0);
-    }
   }
   else {
     buf[rd] = 0; /* Add an extra NUL for string searches in filter */
@@ -90,10 +86,10 @@ void write_client(char* data, ssize_t size)
     ssize_t wr = write(CLIENT_OUT, data, size);
     switch(wr) {
     case 0:
-      DEBUG0("Short write to client");
+      MSG0("Short write to client");
       exit(1);
     case -1:
-      DEBUG0("Write to client failed");
+      MSG0("Write to client failed");
       exit(1);
     default:
       data += wr;
@@ -106,7 +102,7 @@ void write_client(char* data, ssize_t size)
 void write_server(char* data, ssize_t size)
 {
   if(write(SERVER_OUT, data, size) != size) {
-    DEBUG0("Short write to server");
+    MSG0("Short write to server");
     exit(1);
   }
   bytes_server += size;
