@@ -7,7 +7,7 @@ PKGURL=http://em.ca/~bruceg/ucspi-proxy/
 # subscription.
 LISTSUB="bgware-subscribe@lists.em.ca"
 
-LISTURL="http://lists.em.ca/ezmlm.cgi?3"
+LISTURL="http://lists.em.ca/?list=bgware"
 
 # Set MAKERPM to non-empty if the tarball is to be built into a RPM.
 MAKERPM=true
