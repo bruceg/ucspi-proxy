@@ -1,6 +1,8 @@
 #include <sys/types.h>
 #include "ucspi-proxy.h"
 
+const char* filter_name = "ucspi-proxy";
+
 void filter_init(int argc, char** argv)
 {
   if(argc > 0)

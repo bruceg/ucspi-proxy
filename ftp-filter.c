@@ -8,6 +8,8 @@
 #include <unistd.h>
 #include "ucspi-proxy.h"
 
+const char* filter_name = "ucspi-proxy-ftp";
+
 void filter_init(int argc, char** argv)
 {
   if(argc > 0)
@@ -80,6 +82,7 @@ static bool make_local_socket(void)
 
 static void run_copier(bool to_remote)
 {
+
   exit(111);
 }
 

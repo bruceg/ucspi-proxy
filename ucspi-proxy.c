@@ -8,10 +8,9 @@
 static ssize_t bytes_client = 0;
 static ssize_t bytes_server = 0;
 static int opt_verbose = 0;
-static const char* argv0;
 
-#define DEBUG0(MSG) if(opt_verbose){fprintf(stderr,"%s: " MSG "\n",argv0);}
-#define DEBUG1(MSG,ARG) if(opt_verbose){fprintf(stderr,"%s: " MSG "\n",argv0,ARG);}
+#define DEBUG0(MSG) if(opt_verbose){fprintf(stderr,"%s: " MSG "\n",filter_name);}
+#define DEBUG1(MSG,ARG) if(opt_verbose){fprintf(stderr,"%s: " MSG "\n",filter_name,ARG);}
 
 ssize_t copy_fd(int in, int out, void (*filter)(char**,ssize_t*))
 {
@@ -39,7 +38,7 @@ void exitfn(void)
 {
   if(opt_verbose) {
     fprintf(stderr, "%s: client %d server %d\n",
-	    argv0, bytes_client, bytes_server);
+	    filter_name, bytes_client, bytes_server);
   }
   filter_deinit();
 }
@@ -47,15 +46,14 @@ void exitfn(void)
 void usage(const char* message)
 {
   if(message)
-    fprintf(stderr, "%s: %s\n", argv0, message);
-  fprintf(stderr, "usage: %s [-v]\n", argv0);
+    fprintf(stderr, "%s: %s\n", filter_name, message);
+  fprintf(stderr, "usage: %s [-v]\n", filter_name);
   exit(1);
 }
 
 void parse_args(int argc, char* argv[])
 {
   int opt;
-  argv0 = argv[0];
   while((opt = getopt(argc, argv, "v")) != EOF) {
     switch(opt) {
     case 'v':
