@@ -1,0 +1,24 @@
+.TH ucspi-proxy 1
+.SH NAME
+ucspi-proxy \- Copy data between a UCSPI client and server
+.SH SYNOPSIS
+.B ucspi-proxy
+[\-v]
+.SH DESCRIPTION
+This program is a simple loop copying data from a UCSPI server (file
+descriptor 0) to a client (FD 7), and from a client (FD 6) to a server
+(FD 1).
+If either socket closes,
+.B ucspi-proxy
+exits.
+.SH OPTIONS
+.TP
+.I -v
+Print messages about errors and byte counts.  Without this option,
+.B ucspi-proxy
+is silent.
+.SH RETURN VALUE
+Exits 0 if a normal end of file was reached on one of the sockets.
+Otherwise it exits 1.
+.SH SEE ALSO
+ucspi-unix, ucspi-tcp
