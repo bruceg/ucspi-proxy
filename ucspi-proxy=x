@@ -1,7 +1,3 @@
 null-filter.o
 ucspi-proxy.a
--lbg-str
--lbg-net
--lbg-msg
--lbg-iobuf
--lbg-unix
+-lbg

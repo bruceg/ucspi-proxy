@@ -8,6 +8,7 @@ Source: http://em.ca/~bruceg/ucspi-proxy/%{version}/ucspi-proxy-%{version}.tar.g
 BuildRoot: /tmp/ucspi-proxy-root
 URL: http://em.ca/~bruceg/ucspi-proxy/
 Packager: Bruce Guenter <bruceg@em.ca>
+BuildRequires: bglibs >= 1.015
 
 %description
 This package contains a proxy program that passes data back and forth

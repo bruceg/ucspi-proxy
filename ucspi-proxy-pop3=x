@@ -2,8 +2,4 @@ pop3-filter.o
 base64.o
 relay-filter.o
 ucspi-proxy.a
--lbg-str
--lbg-msg
--lbg-iobuf
--lbg-net
--lbg-unix
+-lbg
