@@ -1,5 +1,5 @@
 PACKAGE = ucspi-proxy
-VERSION = 0.94
+VERSION = 0.95
 
 CC = gcc
 CFLAGS = -O -g -W -Wall
@@ -36,6 +36,7 @@ pop3-relay-filter.o: pop3-relay-filter.c ucspi-proxy.h
 imap-relay-filter.o: imap-relay-filter.c ucspi-proxy.h
 ftp-filter.o: ftp-filter.c ucspi-proxy.h
 http-xlate-filter.o: http-xlate-filter.c ucspi-proxy.h
+base64.o: base64.c
 
 ucspi-proxy: ucspi-proxy.o null-filter.o
 	$(LD) $(LDFLAGS) -o $@ ucspi-proxy.o null-filter.o $(LIBS)
@@ -46,13 +47,15 @@ ucspi-proxy-ftp: ucspi-proxy.o ftp-filter.o
 ucspi-proxy-log: ucspi-proxy.o log-filter.o
 	$(LD) $(LDFLAGS) -o $@ ucspi-proxy.o log-filter.o $(LIBS)
 
-ucspi-proxy-pop3-relay: ucspi-proxy.o pop3-relay-filter.o relay-filter.o
+ucspi-proxy-pop3-relay: ucspi-proxy.o pop3-relay-filter.o \
+	relay-filter.o base64.o
 	$(LD) $(LDFLAGS) -o $@ ucspi-proxy.o pop3-relay-filter.o \
-		relay-filter.o $(LIBS)
+		relay-filter.o base64.o $(LIBS)
 
-ucspi-proxy-imap-relay: ucspi-proxy.o imap-relay-filter.o relay-filter.o
+ucspi-proxy-imap-relay: ucspi-proxy.o imap-relay-filter.o \
+	relay-filter.o base64.o
 	$(LD) $(LDFLAGS) -o $@ ucspi-proxy.o imap-relay-filter.o \
-		relay-filter.o $(LIBS)
+		relay-filter.o base64.o $(LIBS)
 
 ucspi-proxy-http-xlate: ucspi-proxy.o http-xlate-filter.o relay-filter.o
 	$(LD) $(LDFLAGS) -o $@ ucspi-proxy.o http-xlate-filter.o $(LIBS)

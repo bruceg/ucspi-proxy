@@ -47,10 +47,15 @@ void relay_init(int argc, char** argv)
   relay_command = argv+2;
 }
 
-void accept_client(void)
+void accept_client(const char* username)
 {
-  fprintf(stderr, "%s: Accepted relay client %s\n", filter_name, client_ip);
-
+  if (username)
+    fprintf(stderr, "%s: Accepted relay client %s, username '%s'\n",
+	    filter_name, client_ip, username);
+  else
+    fprintf(stderr, "%s: Accepted relay client %s, unknown username\n",
+	    filter_name, client_ip);
+  
   /* Turn off all further filtering, as this IP has already authenticated */
   del_filter(CLIENT_IN);
   del_filter(SERVER_IN);

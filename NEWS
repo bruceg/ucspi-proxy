@@ -1,4 +1,9 @@
 -------------------------------------------------------------------------------
+Changes in version 0.95
+
+- The relay proxy programs now parse the username and display it
+  (including extracting data from base64-encoded strings).
+-------------------------------------------------------------------------------
 Changes in version 0.94
 
 - Added a translating HTTP proxy.
