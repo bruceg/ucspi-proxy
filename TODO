@@ -1,8 +1,8 @@
-- Update to using SPAC to build
+- Write/fix man pages
 
-- Bump version to 0.96
+- Support UCSPI PROTO other than TCP
 
-- Release package
+- Support connecting to UNIX domain socket.
 
 - Complete FTP proxy module
 
