@@ -12,4 +12,4 @@ shift 4
 exec envuidgid nobody \
 tcpserver -H -R -U -llocalhost "$@" $localhost $localport \
 	tcpclient -H -R -llocalhost $remotehost $remoteport \
-	ucspi-proxy
+	ucspi-proxy-null

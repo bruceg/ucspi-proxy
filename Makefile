@@ -17,12 +17,12 @@ man1dir = $(mandir)/man1
 install = /usr/bin/install
 
 SOURCES = ucspi-proxy.c null-filter.c ucspi-proxy.h ucspi-proxy.1 ftp-filter.c log-filter.c
-PROGS = ucspi-proxy ucspi-proxy-ftp ucspi-proxy-log
+PROGS = ucspi-proxy-null ucspi-proxy-ftp ucspi-proxy-log
 SCRIPTS = tcp-proxy ftp-proxy log-proxy
 
 all: $(PROGS)
 
-ucspi-proxy: ucspi-proxy.o null-filter.o
+ucspi-proxy-null: ucspi-proxy.o null-filter.o
 	$(LD) $(LDFLAGS) -o $@ ucspi-proxy.o null-filter.o $(LIBS)
 
 ucspi-proxy-ftp: ucspi-proxy.o ftp-filter.o
@@ -39,4 +39,4 @@ install:
 	$(install) -m 644 ucspi-proxy.1 $(man1dir)
 
 clean:
-	$(RM) *.o $(progs)
+	$(RM) *.o $(PROGS)
