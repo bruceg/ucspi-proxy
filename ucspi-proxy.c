@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
@@ -148,8 +149,10 @@ int main(int argc, char* argv[])
       if(fd > maxfd)
 	maxfd = fd;
     }
-    if(select(maxfd+1, &fds, 0, 0, 0) == -1)
-      usage("select failed!");
+    while(select(maxfd+1, &fds, 0, 0, 0) == -1) {
+      if(errno != EINTR)
+	usage("select failed!");
+    }
     for(filter = filters; filter; filter = filter->next)
       if(FD_ISSET(filter->fd, &fds))
 	handle_fd(filter);
