@@ -209,7 +209,9 @@ int main(int argc, char* argv[])
 	usage("select failed!");
     }
     for(filter = filters; filter; filter = filter->next)
-      if(FD_ISSET(filter->fd, &fds))
+      if(FD_ISSET(filter->fd, &fds)) {
 	handle_fd(filter);
+	break;
+      }
   }
 }
