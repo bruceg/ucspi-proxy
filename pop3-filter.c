@@ -36,19 +36,20 @@ static void filter_client_data(char* data, ssize_t size)
     if ((cr = memchr(data, CR, size)) == 0)
       cr = memchr(data, LF, size);
     if (cr != 0) {
-      if (local_name) {
+      ptr = data + 5;
+      while (isspace(*ptr)) ++ptr;
+      str_copyb(&username, ptr, cr-ptr);
+      if (local_name && memchr(data, '@', size) == 0) {
 	str_copyb(&linebuf, data, cr-data);
-	if (memchr(data, '@', size) == 0) {
-	  str_catc(&linebuf, '@');
-	  str_cats(&linebuf, local_name);
-	  str_catb(&linebuf, cr, size-(cr-data));
-	  msg1(linebuf.s);
-	}
-	msg1(linebuf.s);
+	str_catc(&linebuf, '@');
+	str_catc(&username, '@');
+	str_cats(&linebuf, local_name);
+	str_cats(&username, local_name);
 	str_catb(&linebuf, cr, size-(cr-data));
 	data = linebuf.s;
 	size = linebuf.len;
       }
+      msg2("USER ", username.s);
     }
   }
   else if (saw_auth) {
