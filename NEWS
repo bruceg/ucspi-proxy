@@ -3,5 +3,8 @@ Changes in version 0.91
 
 - Added logging proxy, which writes all data to stderr.
 
+- Added FTP proxy, which should be able to handle all combinations of
+  the APPE, LIST, NLST, PASV, PORT, RETR, STOR, and STOU commands.
+
 - Fixed typo in ucspi-tcp script.
 -------------------------------------------------------------------------------
