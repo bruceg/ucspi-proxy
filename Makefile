@@ -1,5 +1,5 @@
 PACKAGE = ucspi-proxy
-VERSION = 0.92
+VERSION = 0.93
 
 CC = gcc
 CFLAGS = -O -g -W -Wall
