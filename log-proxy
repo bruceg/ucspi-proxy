@@ -4,6 +4,7 @@ if [ $# -lt 4 ]; then
 	echo "  All options are passed directly to tcpserver."
 	exit 1
 fi
+prefix=`dirname $0`
 localhost=$1
 localport=$2
 remotehost=$3
@@ -12,4 +13,4 @@ shift 4
 exec envuidgid nobody \
 tcpserver -H -R -U -llocalhost "$@" $localhost $localport \
 	tcpclient -H -R -llocalhost $remotehost $remoteport \
-	ucspi-proxy-log
+	$prefix/ucspi-proxy-log
