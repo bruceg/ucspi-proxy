@@ -2,6 +2,10 @@
 #define UCSPI_PROXY__H__
 
 #define BUFSIZE 4096
+#define CLIENT_IN 0
+#define CLIENT_OUT 1
+#define SERVER_IN 6
+#define SERVER_OUT 7
 
 typedef int bool;
 #define true ((bool)(0==0))
@@ -10,11 +14,15 @@ typedef int bool;
 /* Functions and globals declared by the filter */
 extern const char* filter_name;
 extern void filter_init(int argc, char** argv);
-extern void filter_client_data(char** data, ssize_t* size);
-extern void filter_server_data(char** data, ssize_t* size);
 extern void filter_deinit(void);
 
-/* Helper functions */
+/* Functions from ucspi-proxy.c */
 extern void usage(const char*);
+extern bool opt_verbose;
+extern void write_client(char*, ssize_t);
+extern void write_server(char*, ssize_t);
+extern bool add_filter(int fd, void(*filter)(char*, ssize_t),
+		       void(*at_eof)(void));
+extern bool del_filter(int fd);
 
 #endif
