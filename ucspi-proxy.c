@@ -12,11 +12,10 @@ static const char* argv0;
 
 #define DEBUG0(MSG) if(opt_verbose){fprintf(stderr,"%s: " MSG "\n",argv0);}
 #define DEBUG1(MSG,ARG) if(opt_verbose){fprintf(stderr,"%s: " MSG "\n",argv0,ARG);}
-#define BUFSIZE 4096
 
 ssize_t copy_fd(int in, int out, void (*filter)(char**,ssize_t*))
 {
-  char buf[BUFSIZE];
+  char buf[BUFSIZE+1];
   char* ptr = buf;
   ssize_t rd = read(in, buf, BUFSIZE);
   if(rd == -1) {
@@ -27,6 +26,7 @@ ssize_t copy_fd(int in, int out, void (*filter)(char**,ssize_t*))
     DEBUG1("EOF on FD %d", in);
     exit(0);
   }
+  buf[rd] = 0; /* Add an extra NUL for string searches in filter */
   filter(&ptr, &rd);
   if(write(out, ptr, rd) != rd) {
     DEBUG1("Short write on FD %d", out);
