@@ -113,7 +113,7 @@ void usage(const char* message)
 {
   if(message)
     fprintf(stderr, "%s: %s\n", filter_name, message);
-  fprintf(stderr, "usage: %s [-v]\n", filter_name);
+  fprintf(stderr, "usage: %s [-v] %s", filter_name, filter_usage);
   exit(1);
 }
 

@@ -13,6 +13,7 @@ typedef int bool;
 
 /* Functions and globals declared by the filter */
 extern const char* filter_name;
+extern const char* filter_usage;
 extern void filter_init(int argc, char** argv);
 extern void filter_deinit(void);
 

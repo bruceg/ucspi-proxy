@@ -215,6 +215,7 @@ static void filter_server_data(char* data, ssize_t size)
 }
 
 const char* filter_name = "ucspi-proxy-ftp";
+const char* filter_usage = "";
 
 void filter_init(int argc, char** argv)
 {
