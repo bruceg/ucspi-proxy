@@ -1,0 +1,15 @@
+#!/bin/sh
+if [ $# -lt 4 ]; then
+	echo "usage: $0 local-host local-port remote-host remote-port [options]"
+	echo "  All options are passed directly to tcpserver."
+	exit 1
+fi
+localhost=$1
+localport=$2
+remotehost=$3
+remoteport=$4
+shift 4
+exec envuidgid nobody \
+tcpserver -H -R -U -llocalhost "$@" $localhost $localport \
+	tcpclient -H -R -llocalhost $remotehost $remoteport \
+	ucspi-proxy-log
