@@ -1,0 +1,16 @@
+#!/bin/sh
+if [ $# -lt 4 ]; then
+	echo "usage: $0 local-host local-port remote-host remote-port [options]"
+	echo "  All options are passed directory to tcpserver."
+	exit 1
+fi
+uid=`id -u nobody`
+gid=`id -g nobody`
+localhost=$1
+localport=$2
+remotehost=$3
+remoteport=$4
+shift 4
+exec tcpserver -H -R -g $gid -u $uid -llocalhost $localhost $localport \
+	tcpclient -H -R -llocalhost $remotehost $remoteport \
+	ucspi-proxy
