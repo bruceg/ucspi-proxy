@@ -1,9 +1,10 @@
+#include <sys/types.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
 #include <unistd.h>
+#include <str/str.h>
 #include "ucspi-proxy.h"
 
 const char filter_connfail_prefix[] = "* NO ";
@@ -12,23 +13,15 @@ const char filter_connfail_suffix[] = "\r\n";
 extern char* base64decode(char* data, unsigned long size);
 
 static bool saw_auth = 0;
-static char* label = 0;
-static ssize_t label_size = 0;
-static char* saved_label = 0;
-static char* username = 0;
+static str label;
+static str saved_label;
+static str username;
 
 static char* parse_label(char* data, ssize_t size)
 {
   char* end;
-  ssize_t len;
   if ((end = memchr(data, ' ', size)) == 0) return 0;
-  len = end - data;
-  if(!label || len > label_size) {
-    free(label);
-    label = malloc(len+1);
-  }
-  memcpy(label, data, len);
-  label[len] = 0;
+  str_copyb(&label, data, end - data);
   return end+1;
 }
 
@@ -42,26 +35,28 @@ static void filter_client_data(char* data, ssize_t size)
     /* If we see a "AUTH" or "LOGIN" command, save the preceding label
      * for reference when looking for the corresponding "OK" */
     if(!strncasecmp(cmd, "AUTHENTICATE ", 5)) {
-      saved_label = label;
-      label = 0;
+      str_copy(&saved_label, &label);
+      str_truncate(&label, 0);
       saw_auth = 1;
     }
     else if(!strncasecmp(cmd, "LOGIN ", 6)) {
       ptr = cmd + 6;
       while (isspace(*ptr))
 	++ptr;
-      ptr = username = strdup(ptr);
+      str_copys(&username, ptr);
+      ptr = username.s;
       while (!isspace(*ptr))
 	++ptr;
       *ptr = 0;
-      saved_label = label;
-      label = 0;
+      str_copy(&saved_label, &label);
+      str_truncate(&label, 0);
     }
   }
   else if(saw_auth) {
     ptr = base64decode(data, size);
     if (ptr) {
-      username = ptr;
+      str_copys(&username, ptr);
+      ptr = username.s;
       while (!isspace(*ptr)) ++ptr;
       *ptr = 0;
     }
@@ -72,20 +67,19 @@ static void filter_client_data(char* data, ssize_t size)
 
 static void filter_server_data(char* data, ssize_t size)
 {
-  if(saved_label) {
+  if(saved_label.len > 0) {
     /* Skip continuation data */
     if(data[0] != '+') {
       /* Check if the response is tagged with the saved label */
       const char* resp = parse_label(data, size);
       if(resp) {
-	if(!strcmp(label, saved_label)) {
+	if(!str_diff(&label, &saved_label)) {
 	  /* Check if the response was an OK */
 	  if(!strncasecmp(resp, "OK ", 3))
-	    accept_client(username);
+	    accept_client(username.s);
 	  else
-	    deny_client(username);
-	  free(saved_label);
-	  saved_label = 0;
+	    deny_client(username.s);
+	  str_truncate(&saved_label, 0);
 	}
       }
     }
