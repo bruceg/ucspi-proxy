@@ -109,7 +109,7 @@ static void write_local(char* data, ssize_t size)
 static void copy_eof(void)
 {
   if(opt_verbose)
-    fprintf(stderr, "%s: copied %d bytes\n", filter_name, copied);
+    fprintf(stderr, "%s: copied %d bytes\n", program, copied);
   close_sockets();
 }
 
@@ -214,8 +214,8 @@ static void filter_server_data(char* data, ssize_t size)
     write_client(data, size);
 }
 
-const char* filter_name = "ucspi-proxy-ftp";
-const char* filter_usage = "";
+const char program[] = "ucspi-proxy-ftp";
+const char filter_usage[] = "";
 
 void filter_init(int argc, char** argv)
 {

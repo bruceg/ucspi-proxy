@@ -57,8 +57,8 @@ static void filter_server_data(char* data, ssize_t size)
   write_client(data, size);
 }
 
-const char* filter_name = "ucspi-proxy-pop3-relay";
-const char* filter_usage = "client-ip";
+const char program[] = "ucspi-proxy-pop3-relay";
+const char filter_usage[] = "client-ip";
 
 void filter_init(int argc, char** argv)
 {

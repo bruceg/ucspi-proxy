@@ -313,8 +313,7 @@ static void filter_server_eof(void)
   exit(0);
 }
 
-const char* filter_name = "ucspi-proxy-http-xlate";
-const char* filter_usage = "search replace [search replace ...]";
+const char filter_usage[] = "search replace [search replace ...]";
 
 void filter_init(int argc, char** argv)
 {

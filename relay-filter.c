@@ -29,7 +29,7 @@ static void run_relay_ctrl(void)
 static void catch_alarm(int ignored)
 {
   /* Run the relay-ctrl process, and then set it up to re-run */
-  fprintf(stderr, "%s: Running relay-ctrl-allow\n", filter_name);
+  fprintf(stderr, "%s: Running relay-ctrl-allow\n", program);
   run_relay_ctrl();
   signal(SIGALRM, catch_alarm);
   alarm(relay_rerun_delay);
@@ -51,10 +51,10 @@ void accept_client(const char* username)
 {
   if (username)
     fprintf(stderr, "%s: Accepted relay client %s, username '%s'\n",
-	    filter_name, client_ip, username);
+	    program, client_ip, username);
   else
     fprintf(stderr, "%s: Accepted relay client %s, unknown username\n",
-	    filter_name, client_ip);
+	    program, client_ip);
   
   /* Turn off all further filtering, as this IP has already authenticated */
   del_filter(CLIENT_IN);
@@ -67,5 +67,5 @@ void accept_client(const char* username)
 
 void deny_client(void)
 {
-  fprintf(stderr, "%s: Failed login from %s\n", filter_name, client_ip);
+  fprintf(stderr, "%s: Failed login from %s\n", program, client_ip);
 }

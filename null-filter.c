@@ -1,8 +1,8 @@
 #include <sys/types.h>
 #include "ucspi-proxy.h"
 
-const char* filter_name = "ucspi-proxy";
-const char* filter_usage = "";
+const char program[] = "ucspi-proxy";
+const char filter_usage[] = "";
 
 void filter_init(int argc, char** argv)
 {
