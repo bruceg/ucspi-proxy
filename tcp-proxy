@@ -9,7 +9,7 @@ localport=$2
 remotehost=$3
 remoteport=$4
 shift 4
-envuidgid nobody
-exec tcpserver -H -R -U -llocalhost $localhost $localport \
+exec envuidgid nobody \
+tcpserver -H -R -U -llocalhost $localhost $localport \
 	tcpclient -H -R -llocalhost $remotehost $remoteport \
 	ucspi-proxy
