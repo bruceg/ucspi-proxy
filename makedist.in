@@ -40,8 +40,7 @@ PKGDIR=www/ucspi-proxy
 RPMUPLOAD="incoming.redhat.com/libc6"
 
 # Set LIST to the mailing list(s) to send the announcement to
-LIST="rpms@lists.em.ca"
-#,ucspi@list.superscript.com,log@list.cr.yp.to"
+LIST="rpms@lists.em.ca ucspi@list.superscript.com log@list.cr.yp.to"
 
 # Run any extra commands to prepare the source tree (such as making
 # documentation) here.
