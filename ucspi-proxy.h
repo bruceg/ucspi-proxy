@@ -1,6 +1,8 @@
 #ifndef UCSPI_PROXY__H__
 #define UCSPI_PROXY__H__
 
+#include <sys/types.h>
+
 #define BUFSIZE 4096
 #define CLIENT_IN 0
 #define CLIENT_OUT 1
@@ -23,11 +25,11 @@ typedef int bool;
 #define DEBUG4(S,A,B,C,D) DEBUGG((stderr, "%s: " S "\n",filter_name,A,B,C,D))
 
 #define MSGG(ARGS) if(opt_verbose){fprintf ARGS;}
-#define MSG0(S) MSGG((stderr, "%s: " S "\n",filter_name))
-#define MSG1(S,A) MSGG((stderr, "%s: " S "\n",filter_name,A))
-#define MSG2(S,A,B) MSGG((stderr, "%s: " S "\n",filter_name,A,B))
-#define MSG3(S,A,B,C) MSGG((stderr, "%s: " S "\n",filter_name,A,B,C))
-#define MSG4(S,A,B,C,D) MSGG((stderr, "%s: " S "\n",filter_name,A,B,C,D))
+#define MSG0(S) MSGG((stderr, "[%d] %s: " S "\n",pid,filter_name))
+#define MSG1(S,A) MSGG((stderr, "[%d] %s: " S "\n",pid,filter_name,A))
+#define MSG2(S,A,B) MSGG((stderr, "[%d] %s: " S "\n",pid,filter_name,A,B))
+#define MSG3(S,A,B,C) MSGG((stderr, "[%d] %s: " S "\n",pid,filter_name,A,B,C))
+#define MSG4(S,A,B,C,D) MSGG((stderr, "[%d] %s: " S "\n",pid,filter_name,A,B,C,D))
 
 /* Functions and globals declared by the filter */
 extern const char* filter_name;
@@ -38,6 +40,7 @@ extern void filter_deinit(void);
 /* Functions from ucspi-proxy.c */
 extern void usage(const char*);
 extern bool opt_verbose;
+extern pid_t pid;
 extern void write_client(char*, ssize_t);
 extern void write_server(char*, ssize_t);
 extern bool add_filter(int fd, void(*filter)(char*, ssize_t),

@@ -10,6 +10,7 @@
 static ssize_t bytes_client = 0;
 static ssize_t bytes_server = 0;
 bool opt_verbose = false;
+pid_t pid;
 
 struct filter_node
 {
@@ -110,10 +111,7 @@ void write_server(char* data, ssize_t size)
 
 static void exitfn(void)
 {
-  if(opt_verbose) {
-    fprintf(stderr, "%s: client %d server %d\n",
-	    filter_name, bytes_client, bytes_server);
-  }
+  MSG2("client %d server %d", bytes_client, bytes_server);
   filter_deinit();
 }
 
@@ -149,6 +147,7 @@ int main(int argc, char* argv[])
   signal(SIGPIPE, SIG_IGN);
   parse_args(argc, argv);
   atexit(exitfn);
+  pid = getpid();
   for(;;) {
     struct filter_node* filter;
     int maxfd = -1;
