@@ -1,8 +1,10 @@
 #include <sys/types.h>
-#include "filter.h"
+#include "ucspi-proxy.h"
 
 void filter_init(int argc, char** argv)
 {
+  if(argc > 0)
+    usage("Too many arguments.");
 }
 
 void filter_client_data(char** data, ssize_t* size)

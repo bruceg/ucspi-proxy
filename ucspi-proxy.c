@@ -3,6 +3,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include "ucspi-proxy.h"
 
 static ssize_t bytes_client = 0;
 static ssize_t bytes_server = 0;
@@ -13,9 +14,10 @@ static const char* argv0;
 #define DEBUG1(MSG,ARG) if(opt_verbose){fprintf(stderr,"%s: " MSG "\n",argv0,ARG);}
 #define BUFSIZE 4096
 
-ssize_t copy_fd(int in, int out)
+ssize_t copy_fd(int in, int out, void (*filter)(char**,ssize_t*))
 {
   char buf[BUFSIZE];
+  char* ptr = buf;
   ssize_t rd = read(in, buf, BUFSIZE);
   if(rd == -1) {
     DEBUG1("Error encountered on FD %d", in);
@@ -25,7 +27,8 @@ ssize_t copy_fd(int in, int out)
     DEBUG1("EOF on FD %d", in);
     exit(0);
   }
-  if(write(out, buf, rd) != rd) {
+  filter(&ptr, &rd);
+  if(write(out, ptr, rd) != rd) {
     DEBUG1("Short write on FD %d", out);
     exit(1);
   }
@@ -38,6 +41,7 @@ void exitfn(void)
     fprintf(stderr, "%s: client %d server %d\n",
 	    argv0, bytes_client, bytes_server);
   }
+  filter_deinit();
 }
 
 void usage(const char* message)
@@ -62,8 +66,7 @@ void parse_args(int argc, char* argv[])
       break;
     }
   }
-  if(argc > optind)
-    usage("Too many arguments.");
+  filter_init(argc-optind, argv+optind);
 }
 
 int main(int argc, char* argv[])
@@ -78,8 +81,8 @@ int main(int argc, char* argv[])
     if(select(7, &fds, 0, 0, 0) == -1)
       usage("select failed!");
     if(FD_ISSET(0, &fds))
-      bytes_client += copy_fd(0, 7);
+      bytes_client += copy_fd(0, 7, filter_client_data);
     if(FD_ISSET(6, &fds))
-      bytes_server += copy_fd(6, 1);
+      bytes_server += copy_fd(6, 1, filter_server_data);
   }
 }

@@ -17,14 +17,14 @@ man1dir = $(mandir)/man1
 install = /usr/bin/install
 
 PROGS = ucspi-proxy
-SOURCES = ucspi-proxy.c
+SOURCES = ucspi-proxy.c null-filter.c ucspi-proxy.h
 SCRIPTS = tcp-proxy
 DOCS = ANNOUNCEMENT COPYING README TODO ucspi-proxy.1
 
 all: $(PROGS)
 
-ucspi-proxy: ucspi-proxy.o
-	$(LD) $(LDFLAGS) -o $@ ucspi-proxy.o $(LIBS)
+ucspi-proxy: ucspi-proxy.o null-filter.o
+	$(LD) $(LDFLAGS) -o $@ ucspi-proxy.o null-filter.o $(LIBS)
 
 install:
 	$(install) -d $(bindir)
