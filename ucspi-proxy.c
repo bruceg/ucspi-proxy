@@ -136,7 +136,7 @@ void usage(const char* message)
 {
   if(message)
     fprintf(stderr, "%s: %s\n", program, message);
-  fprintf(stderr, "usage: %s [-v] %s", program, filter_usage);
+  fprintf(stderr, "usage: %s [-v] host port %s\n", program, filter_usage);
   exit(1);
 }
 
@@ -161,8 +161,11 @@ static void parse_args(int argc, char* argv[])
       break;
     }
   }
-  if ((SERVER_FD = tcp_connect()) == -1)
+  if (argc - optind < 2)
+    usage("Missing host and port");
+  if ((SERVER_FD = tcp_connect(argv[optind], argv[optind+1])) == -1)
     connfail();
+  optind += 2;
   filter_init(argc-optind, argv+optind);
 }
 

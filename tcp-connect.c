@@ -12,7 +12,7 @@ static long port;
 
 static unsigned long timeout = 0;
 
-int tcp_connect(void)
+int tcp_connect(const char* host, const char* portstr)
 {
   const char* tmp;
   const char* end;
@@ -26,21 +26,11 @@ int tcp_connect(void)
   }
   if (timeout == 0) timeout = 30;
 
-  if ((tmp = getenv("PROXY_CONNECT_HOST")) != 0) {
-    if (!resolve_ipv4name(tmp, &addr))
-      die3(111, "Could not resolve, '", tmp, "'");
-  }
-  else if ((tmp = getenv("PROXY_CONNECT_ADDR")) != 0) {
-    if (!ipv4_parse(tmp, &addr, &end) || *end != 0)
-      die3(111, "Could not parse IP address '", tmp, "'");
-  }
-  else
-    die1(111, "No host specified to connect to");
-  if ((tmp = getenv("PROXY_CONNECT_PORT")) == 0)
-    die1(111, "$PROXY_CONNECT_PORT is not set");
-  if ((port = strtol(tmp, (char**)&end, 10)) <= 0 ||
-      port > 0xffff || *end != 0)
-    die3(111, "Invalid connect port number '", tmp, "'");
+  if (!resolve_ipv4name(host, &addr))
+    die3(111, "Could not resolve '", host, "'");
+  if ((port = strtol(portstr, (char**)&end, 10)) <= 0 ||
+      port >= 0xffff || *end != 0)
+    die2(111, "Invalid port number: ", portstr);
 
   if ((fd = socket_tcp()) == -1)
     warn1sys("Could not create outgoing socket");

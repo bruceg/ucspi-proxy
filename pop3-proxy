@@ -6,11 +6,10 @@ if [ $# -lt 2 ]; then
 fi
 prefix=`dirname $0`
 localhost=$1
-PROXY_CONNECT_HOST=$2
-export PROXY_CONNECT_HOST
+remotehost=$2
 shift 2
 exec \
 envuidgid nobody \
 tcpserver -HRUllocalhost "$@" $localhost 110 \
-$prefix/ucspi-proxy-pop3 \
+$prefix/ucspi-proxy-pop3 $remotehost 110 \
 /usr/sbin/relay-ctrl-allow /bin/true

@@ -10,7 +10,7 @@ localport=$2
 remotehost=$3
 remoteport=$4
 shift 4
-exec envuidgid nobody \
+exec \
+envuidgid nobody \
 tcpserver -HRUllocalhost "$@" $localhost $localport \
-	tcpclient -HRllocalhost $remotehost $remoteport \
-	$prefix/ucspi-proxy-log
+$prefix/ucspi-proxy-log $remotehost $remoteport

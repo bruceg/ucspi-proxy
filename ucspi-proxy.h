@@ -53,7 +53,7 @@ extern bool add_filter(int fd, filter_fn filter, eof_fn at_eof);
 extern bool del_filter(int fd);
 
 /* Functions from tcp-connect.c */
-extern int tcp_connect(void);
+extern int tcp_connect(const char*, const char*);
 
 /* Functions from relay-filter.c */
 extern void relay_init(int argc, char* argv[]);

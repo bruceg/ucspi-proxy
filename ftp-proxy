@@ -8,7 +8,7 @@ prefix=`dirname $0`
 localhost=$1
 remotehost=$2
 shift 2
-exec envuidgid nobody \
+exec \
+envuidgid nobody \
 tcpserver -HRUllocalhost "$@" $localhost 21 \
-	tcpclient -HRllocalhost $remotehost 21 \
-	$prefix/ucspi-proxy-ftp
+$prefix/ucspi-proxy-ftp $remotehost 21
