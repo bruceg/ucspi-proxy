@@ -29,9 +29,6 @@ static void filter_server_data(char* data, ssize_t size)
   write_client(data, size);
 }
 
-const char program[] = "ucspi-proxy-log";
-const char filter_usage[] = "";
-
 void filter_init(int argc, char** argv)
 {
   if(argc > 0)

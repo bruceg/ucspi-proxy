@@ -313,8 +313,6 @@ static void filter_server_eof(void)
   exit(0);
 }
 
-const char filter_usage[] = "search replace [search replace ...]";
-
 void filter_init(int argc, char** argv)
 {
   int i;

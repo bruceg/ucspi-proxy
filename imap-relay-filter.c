@@ -93,9 +93,6 @@ static void filter_server_data(char* data, ssize_t size)
   write_client(data, size);
 }
 
-const char program[] = "ucspi-proxy-imap-relay";
-const char filter_usage[] = "client-ip delay command [args ...]";
-
 void filter_init(int argc, char** argv)
 {
   relay_init(argc, argv);
