@@ -14,8 +14,10 @@
 
 const int msg_show_pid = 1;
 
-static ssize_t bytes_client = 0;
-static ssize_t bytes_server = 0;
+static unsigned long bytes_client_in = 0;
+static unsigned long bytes_client_out = 0;
+static unsigned long bytes_server_in = 0;
+static unsigned long bytes_server_out = 0;
 int opt_verbose = 0;
 static unsigned opt_timeout = 30;
 pid_t pid;
@@ -96,6 +98,10 @@ static void handle_fd(struct filter_node* filter)
   }
   else {
     buf[rd] = 0; /* Add an extra NUL for string searches in filter */
+    if (filter->fd == CLIENT_IN)
+      bytes_client_in += rd;
+    else if (filter->fd == SERVER_FD)
+      bytes_server_in += rd;
     filter->filter(buf, rd);
   }
 }
@@ -114,9 +120,9 @@ void write_client(const char* data, ssize_t size)
     default:
       data += wr;
       size -= wr;
+      bytes_client_out += wr;
     }
   }
-  bytes_client += size;
 }
 
 void writes_client(const char* data)
@@ -130,7 +136,7 @@ void write_server(const char* data, ssize_t size)
     if (opt_verbose) msg1("Short write to server");
     exit(1);
   }
-  bytes_server += size;
+  bytes_server_out += size;
 }
 
 void writes_server(const char* data)
@@ -141,11 +147,18 @@ void writes_server(const char* data)
 static void exitfn(void)
 {
   if (opt_verbose) {
-    char num1[FMT_ULONG_LEN];
-    char num2[FMT_ULONG_LEN];
-    num1[fmt_udec(num1, bytes_client)] = 0;
-    num2[fmt_udec(num2, bytes_server)] = 0;
-    msg4("client ", num1, " server ", num2);
+    char line[42+FMT_ULONG_LEN*4];
+    int i;
+    memcpy(line, "bytes: client->server ", 22); i = 22;
+    i += fmt_udec(line+i, bytes_client_in);
+    line[i++] = '-'; line[i++] = '>';
+    i += fmt_udec(line+i, bytes_server_out);
+    memcpy(line+i, " server->client ", 16); i += 16;
+    i += fmt_udec(line+i, bytes_server_in);
+    line[i++] = '-'; line[i++] = '>';
+    i += fmt_udec(line+i, bytes_client_out);
+    line[i] = 0;
+    msg1(line);
   }
   filter_deinit();
 }
