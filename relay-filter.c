@@ -27,7 +27,7 @@ static void run_relay_ctrl(void)
 
 static void catch_alarm(int ignored)
 {
-  if (relay_command[0] == 0)
+  if (relay_command == 0)
     return;
   /* Run the relay-ctrl process, and then set it up to re-run */
   fprintf(stderr, "%s: Running relay-ctrl-allow\n", program);
