@@ -4,10 +4,10 @@
 #include <unistd.h>
 #include "ucspi-proxy.h"
 
-extern void accept_ip(const char* client_ip);
+extern void accept_client();
 
 static bool saw_pass = 0;
-static const char* client_ip = 0;
+const char* client_ip = 0;
 
 static void filter_client_data(char* data, ssize_t size)
 {
@@ -20,7 +20,7 @@ static void filter_server_data(char* data, ssize_t size)
 {
   if(saw_pass) {
     if(!strncasecmp(data, "+OK ", 4))
-      accept_ip(client_ip);
+      accept_client();
     saw_pass = 0;
   }
   write_client(data, size);

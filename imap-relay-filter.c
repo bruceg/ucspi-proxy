@@ -4,9 +4,9 @@
 #include <unistd.h>
 #include "ucspi-proxy.h"
 
-extern void accept_ip(const char* client_ip);
+extern void accept_client();
 
-static const char* client_ip = 0;
+const char* client_ip = 0;
 static char* label = 0;
 static ssize_t label_size = 0;
 static char* saved_label = 0;
@@ -56,7 +56,7 @@ static void filter_server_data(char* data, ssize_t size)
     if(!strcmp(label, saved_label)) {
       /* Check if the response was an OK */
       if(!strncasecmp(resp, "OK ", 3)) {
-	accept_ip(client_ip);
+	accept_client();
       }
       free(saved_label);
       saved_label = 0;
