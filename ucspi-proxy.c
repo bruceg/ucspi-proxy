@@ -132,7 +132,7 @@ static void retry_write(const char* data, ssize_t size,
   while(size > 0) {
     io.events = IOPOLL_WRITE;
     io.revents = 0;
-    switch (iopoll(&io, 1, -1)) {
+    switch (iopoll_restart(&io, 1, -1)) {
     case -1:
       die1sys(1, "Poll failed");
     case 0:
