@@ -4,7 +4,8 @@
 #include <unistd.h>
 #include "ucspi-proxy.h"
 
-extern void accept_client();
+extern void accept_client(void);
+extern void deny_client(void);
 
 static bool saw_pass = 0;
 const char* client_ip = 0;
@@ -21,6 +22,8 @@ static void filter_server_data(char* data, ssize_t size)
   if(saw_pass) {
     if(!strncasecmp(data, "+OK ", 4))
       accept_client();
+    else
+      deny_client();
     saw_pass = 0;
   }
   write_client(data, size);
