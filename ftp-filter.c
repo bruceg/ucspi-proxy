@@ -139,9 +139,9 @@ static bool start_copier(bool to_remote)
 
   copied = 0;
   if(to_remote)
-    add_filter(locsock, write_remote, copy_eof);
+    set_filter(locsock, write_remote, copy_eof);
   else
-    add_filter(remsock, write_local, copy_eof);
+    set_filter(remsock, write_local, copy_eof);
   return true;
 }
 
@@ -236,8 +236,8 @@ void filter_init(int argc, char** argv)
 {
   if(argc > 0)
     usage("Too many arguments.");
-  add_filter(CLIENT_IN, filter_client_data, 0);
-  add_filter(SERVER_FD, filter_server_data, 0);
+  set_filter(CLIENT_IN, filter_client_data, 0);
+  set_filter(SERVER_FD, filter_server_data, 0);
 }
 
 void filter_deinit(void)

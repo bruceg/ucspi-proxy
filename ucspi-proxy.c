@@ -35,7 +35,7 @@ struct filter_node
 
 struct filter_node* filters = 0;
 
-bool add_filter(int fd, filter_fn filter, eof_fn at_eof)
+static bool new_filter(int fd, filter_fn filter, eof_fn at_eof)
 {
   struct filter_node* newnode = malloc(sizeof *filters);
   if(!newnode)
@@ -53,6 +53,19 @@ bool add_filter(int fd, filter_fn filter, eof_fn at_eof)
     ptr->next = newnode;
   }
   return true;
+}
+
+bool set_filter(int fd, filter_fn filter, eof_fn at_eof)
+{
+  struct filter_node* node;
+  for (node = filters; node != 0; node = node->next) {
+    if (node->fd == fd) {
+      node->filter = filter;
+      node->at_eof = at_eof;
+      return true;
+    }
+  }
+  return new_filter(fd, filter, at_eof);
 }
 
 bool del_filter(int fd)

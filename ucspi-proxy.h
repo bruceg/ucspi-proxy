@@ -31,7 +31,7 @@ extern void write_client(const char*, ssize_t);
 extern void write_server(const char*, ssize_t);
 extern void writes_client(const char*);
 extern void writes_server(const char*);
-extern bool add_filter(int fd, filter_fn filter, eof_fn at_eof);
+extern bool set_filter(int fd, filter_fn filter, eof_fn at_eof);
 extern bool del_filter(int fd);
 
 /* Functions from tcp-connect.c */
