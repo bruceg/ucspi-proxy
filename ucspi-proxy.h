@@ -25,7 +25,7 @@ extern void filter_deinit(void);
 
 /* Functions from ucspi-proxy.c */
 extern void usage(const char*);
-extern bool opt_verbose;
+extern int opt_verbose;
 extern pid_t pid;
 extern void write_client(const char*, ssize_t);
 extern void write_server(const char*, ssize_t);

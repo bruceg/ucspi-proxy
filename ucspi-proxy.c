@@ -16,7 +16,7 @@ const int msg_show_pid = 1;
 
 static ssize_t bytes_client = 0;
 static ssize_t bytes_server = 0;
-bool opt_verbose = false;
+int opt_verbose = 0;
 static unsigned opt_timeout = 30;
 pid_t pid;
 
@@ -180,7 +180,7 @@ static void parse_args(int argc, char* argv[])
   while((opt = getopt(argc, argv, "vt:")) != EOF) {
     switch(opt) {
     case 'v':
-      opt_verbose = true;
+      opt_verbose++;
       break;
     case 't':
       tmp = strtoul(optarg, &end, 10);
