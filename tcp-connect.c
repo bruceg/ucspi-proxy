@@ -10,21 +10,11 @@
 static ipv4addr addr;
 static long port;
 
-static unsigned long timeout = 0;
-
-int tcp_connect(const char* host, const char* portstr)
+int tcp_connect(const char* host, const char* portstr, unsigned timeout)
 {
-  const char* tmp;
   const char* end;
   int fd;
   iopoll_fd pf;
-
-  if ((tmp = getenv("PROXY_CONNECT_TIMEOUT")) != 0) {
-    timeout = strtoul(tmp, (char**)&end, 10);
-    if (*end != 0)
-      die2(111, "Invalid connect timeout: ", tmp);
-  }
-  if (timeout == 0) timeout = 30;
 
   if (!resolve_ipv4name(host, &addr))
     die3(111, "Could not resolve '", host, "'");

@@ -13,6 +13,7 @@ const int msg_show_pid = 1;
 static ssize_t bytes_client = 0;
 static ssize_t bytes_server = 0;
 bool opt_verbose = false;
+static unsigned opt_timeout = 30;
 pid_t pid;
 
 int SERVER_FD = -1;
@@ -136,7 +137,8 @@ void usage(const char* message)
 {
   if(message)
     fprintf(stderr, "%s: %s\n", program, message);
-  fprintf(stderr, "usage: %s [-v] host port %s\n", program, filter_usage);
+  fprintf(stderr, "usage: %s [-v] [-t timeout] host port %s\n",
+	  program, filter_usage);
   exit(1);
 }
 
@@ -151,10 +153,18 @@ static void connfail(void)
 static void parse_args(int argc, char* argv[])
 {
   int opt;
-  while((opt = getopt(argc, argv, "v")) != EOF) {
+  unsigned tmp;
+  char* end;
+  while((opt = getopt(argc, argv, "vt:")) != EOF) {
     switch(opt) {
     case 'v':
       opt_verbose = true;
+      break;
+    case 't':
+      tmp = strtoul(optarg, &end, 10);
+      if (tmp == 0 || *end != 0)
+	usage("Invalid timeout");
+      opt_timeout = tmp;
       break;
     default:
       usage("Unknown option.");
@@ -163,7 +173,8 @@ static void parse_args(int argc, char* argv[])
   }
   if (argc - optind < 2)
     usage("Missing host and port");
-  if ((SERVER_FD = tcp_connect(argv[optind], argv[optind+1])) == -1)
+  if ((SERVER_FD = tcp_connect(argv[optind], argv[optind+1],
+			       opt_timeout)) == -1)
     connfail();
   optind += 2;
   filter_init(argc-optind, argv+optind);
