@@ -1,3 +1,9 @@
+- Update to using SPAC to build
+
+- Bump version to 0.96
+
+- Release package
+
 - Complete FTP proxy module
 
 - NEWS NOTE:
