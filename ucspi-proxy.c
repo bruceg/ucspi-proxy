@@ -12,6 +12,10 @@ static ssize_t bytes_server = 0;
 bool opt_verbose = false;
 pid_t pid;
 
+/* Allow these to be redefined for proxies that make their own connections. */
+int SERVER_IN = 6;
+int SERVER_OUT = 7;
+
 struct filter_node
 {
   int fd;

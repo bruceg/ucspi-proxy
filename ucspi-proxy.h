@@ -6,8 +6,8 @@
 #define BUFSIZE 4096
 #define CLIENT_IN 0
 #define CLIENT_OUT 1
-#define SERVER_IN 6
-#define SERVER_OUT 7
+extern int SERVER_IN;
+extern int SERVER_OUT;
 
 typedef int bool;
 #define true ((bool)(0==0))
