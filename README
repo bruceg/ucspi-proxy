@@ -2,7 +2,7 @@ ucspi-proxy
 Connection proxy for UCSPI tools
 Bruce Guenter <bruceg@em.ca>
 Version 0.94
-2000-10-12
+2000-12-14
 
 This package contains a proxy program that passes data back and forth
 between two connections set up by a UCSPI server and a UCSPI client.
