@@ -1,10 +1,12 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include "ucspi-proxy.h"
 
-extern void accept_client();
+extern void accept_client(void);
+extern void deny_client(void);
 
 const char* client_ip = 0;
 static char* label = 0;
@@ -29,15 +31,15 @@ static const char* parse_label(char* data, ssize_t size)
 
 static void filter_client_data(char* data, ssize_t size)
 {
-  const char* cmd;
-  if(!(cmd = parse_label(data, size)))
-    return;
-  /* If we see a "AUTH" or "LOGIN" command, save the preceding label
-   * for reference when looking for the corresponding "OK" */
-  if(!strncasecmp(cmd, "AUTH ", 5) ||
-     !strncasecmp(cmd, "LOGIN ", 6)) {
-    saved_label = label;
-    label = 0;
+  const char* cmd = parse_label(data, size);
+  if(cmd) {
+    /* If we see a "AUTH" or "LOGIN" command, save the preceding label
+     * for reference when looking for the corresponding "OK" */
+    if(!strncasecmp(cmd, "AUTHENTICATE ", 5) ||
+       !strncasecmp(cmd, "LOGIN ", 6)) {
+      saved_label = label;
+      label = 0;
+    }
   }
   write_server(data, size);
 }
@@ -45,21 +47,21 @@ static void filter_client_data(char* data, ssize_t size)
 static void filter_server_data(char* data, ssize_t size)
 {
   if(saved_label) {
-    const char* resp;
     /* Skip continuation data */
-    if(data[0] == '+')
-      return;
-    /* Check if the response is tagged with the saved label */
-    resp = parse_label(data, size);
-    if(!resp)
-      return;
-    if(!strcmp(label, saved_label)) {
-      /* Check if the response was an OK */
-      if(!strncasecmp(resp, "OK ", 3)) {
-	accept_client();
+    if(data[0] != '+') {
+      /* Check if the response is tagged with the saved label */
+      const char* resp = parse_label(data, size);
+      if(resp) {
+	if(!strcmp(label, saved_label)) {
+	  /* Check if the response was an OK */
+	  if(!strncasecmp(resp, "OK ", 3))
+	    accept_client();
+	  else
+	    deny_client();
+	  free(saved_label);
+	  saved_label = 0;
+	}
       }
-      free(saved_label);
-      saved_label = 0;
     }
   }
   write_client(data, size);
