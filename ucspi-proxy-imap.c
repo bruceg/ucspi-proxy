@@ -2,7 +2,7 @@
 #include "ucspi-proxy.h"
 
 const char program[] = "ucspi-proxy-imap";
-const char filter_usage[] = "command [args ...]";
+const char filter_usage[] = "[command [args ...]]";
 
 const char* local_name = 0;
 
