@@ -1,4 +1,8 @@
 -------------------------------------------------------------------------------
+Changes in version 0.96
+
+- Add the PID to all output messages, to allow for correlation.
+-------------------------------------------------------------------------------
 Changes in version 0.95
 
 - The relay proxy programs now parse the username and display it
