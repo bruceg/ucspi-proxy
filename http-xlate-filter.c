@@ -6,6 +6,10 @@
 #include <unistd.h>
 #include "ucspi-proxy.h"
 
+// FIXME: make sure this is the right error number
+const char filter_connfail_prefix[] = "503 ";
+const char filter_connfail_suffix[] = "\r\n";
+
 #define CR ((char)13)
 #define LF ((char)10)
 
@@ -327,7 +331,7 @@ void filter_init(int argc, char** argv)
   }
   repls[i].src = repls[i].dst = 0;
   add_filter(CLIENT_IN, write_server, 0);
-  add_filter(SERVER_IN, filter_server_data, filter_server_eof);
+  add_filter(SERVER_FD, filter_server_data, filter_server_eof);
   calc_lengths();
 }
 

@@ -1,2 +1,6 @@
 http-xlate-filter.o
-ucspi-proxy.o
+ucspi-proxy.a
+-lbg-msg
+-lbg-iobuf
+-lbg-net
+-lbg-unix

@@ -1,6 +1,10 @@
 -------------------------------------------------------------------------------
 Changes in version 0.96
 
+- Major internal rewrite.
+- Moved the server connect handler into the proxy program.  This allows
+  for useful custom error messages (including system error strings) when
+  the connection fails.
 - Add the PID to all output messages, to allow for correlation.
 -------------------------------------------------------------------------------
 Changes in version 0.95

@@ -222,7 +222,7 @@ void filter_init(int argc, char** argv)
   if(argc > 0)
     usage("Too many arguments.");
   add_filter(CLIENT_IN, filter_client_data, 0);
-  add_filter(SERVER_IN, filter_server_data, 0);
+  add_filter(SERVER_FD, filter_server_data, 0);
 }
 
 void filter_deinit(void)

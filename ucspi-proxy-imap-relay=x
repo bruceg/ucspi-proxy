@@ -1,4 +1,8 @@
 imap-relay-filter.o
 base64.o
 relay-filter.o
-ucspi-proxy.o
+ucspi-proxy.a
+-lbg-msg
+-lbg-iobuf
+-lbg-net
+-lbg-unix

@@ -1,20 +1,21 @@
+#include <sys/types.h>
 #include <errno.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/time.h>
-#include <sys/types.h>
 #include <unistd.h>
 #include "ucspi-proxy.h"
+
+const int msg_show_pid = 1;
 
 static ssize_t bytes_client = 0;
 static ssize_t bytes_server = 0;
 bool opt_verbose = false;
 pid_t pid;
 
-/* Allow these to be redefined for proxies that make their own connections. */
-int SERVER_IN = 6;
-int SERVER_OUT = 7;
+int SERVER_FD = -1;
 
 struct filter_node
 {
@@ -85,7 +86,7 @@ static void handle_fd(struct filter_node* filter)
   }
 }
 
-void write_client(char* data, ssize_t size)
+void write_client(const char* data, ssize_t size)
 {
   while(size > 0) {
     ssize_t wr = write(CLIENT_OUT, data, size);
@@ -104,13 +105,23 @@ void write_client(char* data, ssize_t size)
   bytes_client += size;
 }
 
-void write_server(char* data, ssize_t size)
+void writes_client(const char* data)
 {
-  if(write(SERVER_OUT, data, size) != size) {
+  write_client(data, strlen(data));
+}
+
+void write_server(const char* data, ssize_t size)
+{
+  if(write(SERVER_FD, data, size) != size) {
     MSG0("Short write to server");
     exit(1);
   }
   bytes_server += size;
+}
+
+void writes_server(const char* data)
+{
+  write_server(data, strlen(data));
 }
 
 static void exitfn(void)
@@ -127,6 +138,14 @@ void usage(const char* message)
   exit(1);
 }
 
+static void connfail(void)
+{
+  writes_client(filter_connfail_prefix);
+  writes_client(strerror(errno));
+  writes_client(filter_connfail_suffix);
+  exit(0);
+}
+
 static void parse_args(int argc, char* argv[])
 {
   int opt;
@@ -140,6 +159,8 @@ static void parse_args(int argc, char* argv[])
       break;
     }
   }
+  if ((SERVER_FD = tcp_connect()) == -1)
+    connfail();
   filter_init(argc-optind, argv+optind);
 }
 
