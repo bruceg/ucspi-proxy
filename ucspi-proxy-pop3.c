@@ -6,7 +6,7 @@ const char filter_usage[] = "command [args ...]";
 
 const char* local_name = 0;
 
-extern void pop3_filter_init();
+extern void pop3_filter_init(void);
 
 void filter_init(int argc, char** argv)
 {
