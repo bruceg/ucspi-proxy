@@ -48,10 +48,17 @@ static void filter_client_data(char* data, ssize_t size)
       ptr = cmd + 6;
       while (isspace(*ptr))
 	++ptr;
-      start = ptr;
-      while (!isspace(*ptr))
-	++ptr;
-      str_copyb(&username, start, ptr-start);
+      start = ptr++;
+      if (*start == '"') {
+	while (*ptr != '"')
+	  ++ptr;
+	str_copyb(&username, start+1, ptr-(start+1));
+      }
+      else {
+	while (!isspace(*ptr))
+	  ++ptr;
+	str_copyb(&username, start, ptr-start);
+      }
       if (local_name && memchr(start, '@', ptr-start) == 0) {
 	str_copyb(&linebuf, data, ptr-data);
 	str_catc(&linebuf, '@');
