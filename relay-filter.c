@@ -8,7 +8,7 @@
 
 static unsigned relay_rerun_delay;
 static const char* client_ip;
-static char* relay_command[3] = { 0, "/bin/true", 0 };
+static char** relay_command;
 
 static void run_relay_ctrl(void)
 {
@@ -36,20 +36,20 @@ static void catch_alarm(int ignored)
   alarm(relay_rerun_delay);
 }
 
-void relay_init(void)
+void relay_init(int argc, char* argv[])
 {
   char* tmp;
   client_ip = getenv("TCPREMOTEIP");
-  relay_command[0] = getenv("PROXY_RELAY_COMMAND");
-  if ((tmp = getenv("PROXY_RELAY_ARG")) != 0)
-    relay_command[1] = tmp;
-  if ((tmp = getenv("PROXY_RELAY_INTERVAL")) != 0) {
-    relay_rerun_delay = strtoul(tmp, &tmp, 10);
-    if (*tmp != 0)
-      usage("Delay parameter is not a positive number");
+  if (argc >= 1) {
+    relay_command = argv;
+    if ((tmp = getenv("PROXY_RELAY_INTERVAL")) != 0) {
+      relay_rerun_delay = strtoul(tmp, &tmp, 10);
+      if (*tmp != 0)
+	usage("Delay parameter is not a positive number");
+    }
+    if (relay_rerun_delay == 0)
+      relay_rerun_delay = 300;
   }
-  if (relay_rerun_delay == 0)
-    relay_rerun_delay = 300;
 }
 
 void accept_client(const char* username)

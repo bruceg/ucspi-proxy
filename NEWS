@@ -6,6 +6,8 @@ Changes in version 0.96
   for useful custom error messages (including system error strings) when
   the connection fails.
 - Add the PID to all output messages, to allow for correlation.
+- Moved the "delay" parameter from the relay filters to an environment
+  variable, defaulting to 5 minutes.
 -------------------------------------------------------------------------------
 Changes in version 0.95
 

@@ -59,7 +59,7 @@ static void filter_server_data(char* data, ssize_t size)
 
 void filter_init(int argc, char** argv)
 {
-  relay_init();
+  relay_init(argc, argv);
   add_filter(CLIENT_IN, filter_client_data, 0);
   add_filter(SERVER_FD, filter_server_data, 0);
 }
