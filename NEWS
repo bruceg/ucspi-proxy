@@ -8,9 +8,9 @@ Changes in version 0.96
 - Add the PID to all output messages, to allow for correlation.
 - Moved the "delay" parameter from the relay filters to an environment
   variable, defaulting to 5 minutes.
-- Added hostname suffixing support to the POP3 proxy, removing the
-  "relay" from the filename since it does more than just relay control
-  now.
+- Added hostname suffixing support to the POP3 and IMAP proxies,
+  removing the "relay" from their filenames since they do more than just
+  relay control now.
 -------------------------------------------------------------------------------
 Changes in version 0.95
 

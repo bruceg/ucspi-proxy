@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <msg/msg.h>
 #include <str/str.h>
 #include "ucspi-proxy.h"
 
@@ -12,10 +13,13 @@ const char filter_connfail_suffix[] = "\r\n";
 
 extern char* base64decode(char* data, unsigned long size);
 
+extern const char* local_name;
+
 static bool saw_auth = 0;
 static str label;
 static str saved_label;
 static str username;
+static str linebuf;
 
 static char* parse_label(char* data, ssize_t size)
 {
@@ -29,6 +33,7 @@ static void filter_client_data(char* data, ssize_t size)
 {
   char* cmd;
   char* ptr;
+  char* start;
 
   cmd = parse_label(data, size);
   if(cmd) {
@@ -43,13 +48,23 @@ static void filter_client_data(char* data, ssize_t size)
       ptr = cmd + 6;
       while (isspace(*ptr))
 	++ptr;
-      str_copys(&username, ptr);
-      ptr = username.s;
+      start = ptr;
       while (!isspace(*ptr))
 	++ptr;
-      *ptr = 0;
+      str_copyb(&username, start, ptr-start);
+      if (local_name && memchr(start, '@', ptr-start) == 0) {
+	str_copyb(&linebuf, data, ptr-data);
+	str_catc(&linebuf, '@');
+	str_catc(&username, '@');
+	str_cats(&linebuf, local_name);
+	str_cats(&username, local_name);
+	str_catb(&linebuf, ptr, size-(ptr-data));
+	data = linebuf.s;
+	size = linebuf.len;
+      }
       str_copy(&saved_label, &label);
       str_truncate(&label, 0);
+      msg2("USER ", username.s);
     }
   }
   else if(saw_auth) {
