@@ -6,7 +6,7 @@
 #include "ucspi-proxy.h"
 
 static const char* relay_ctrl_allow = "/usr/sbin/relay-ctrl-allow";
-static const char* true = "/bin/true";
+static const char* true_path = "/bin/true";
 static const unsigned relay_rerun_delay = 5 * 60;
 
 extern const char* client_ip;
@@ -20,7 +20,7 @@ static void run_relay_ctrl(void)
     return;
   case 0:
     setenv("TCPREMOTEIP", client_ip, 1);
-    execl(relay_ctrl_allow, relay_ctrl_allow, true, 0);
+    execl(relay_ctrl_allow, relay_ctrl_allow, true_path, 0);
     exit(1);
   default:
     waitpid(pid, 0, 0);
