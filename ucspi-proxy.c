@@ -7,34 +7,100 @@
 
 static ssize_t bytes_client = 0;
 static ssize_t bytes_server = 0;
-static int opt_verbose = 0;
+bool opt_verbose = false;
 
 #define DEBUG0(MSG) if(opt_verbose){fprintf(stderr,"%s: " MSG "\n",filter_name);}
 #define DEBUG1(MSG,ARG) if(opt_verbose){fprintf(stderr,"%s: " MSG "\n",filter_name,ARG);}
 
-ssize_t copy_fd(int in, int out, void (*filter)(char**,ssize_t*))
+struct filter_node
+{
+  int fd;
+  void (*filter)(char*, ssize_t);
+  void (*at_eof)(void);
+  
+  struct filter_node* next;
+};
+
+struct filter_node* filters = 0;
+
+bool add_filter(int fd, void(*filter)(char*, ssize_t), void(*at_eof)(void))
+{
+  struct filter_node* newnode = malloc(sizeof *filters);
+  if(!newnode)
+    return false;
+  newnode->fd = fd;
+  newnode->filter = filter;
+  newnode->at_eof = at_eof;
+  newnode->next = 0;
+  if(!filters)
+    filters = newnode;
+  else {
+    struct filter_node* ptr = filters;
+    while(ptr->next)
+      ptr = ptr->next;
+    ptr->next = newnode;
+  }
+  return true;
+}
+
+bool del_filter(int fd)
+{
+  struct filter_node* prev = 0;
+  struct filter_node* curr = filters;
+  while(curr) {
+    if(curr->fd == fd) {
+      if(prev)
+	prev->next = curr->next;
+      else
+	filters = curr->next;
+      free(curr);
+      return true;
+    }
+  }
+  return false;
+}
+
+static void handle_fd(struct filter_node* filter)
 {
   char buf[BUFSIZE+1];
-  char* ptr = buf;
-  ssize_t rd = read(in, buf, BUFSIZE);
+  ssize_t rd = read(filter->fd, buf, BUFSIZE);
   if(rd == -1) {
-    DEBUG1("Error encountered on FD %d", in);
+    DEBUG1("Error encountered on FD %d", filter->fd);
     exit(1);
   }
   if(rd == 0) {
-    DEBUG1("EOF on FD %d", in);
-    exit(0);
+    if(filter->at_eof)
+      filter->at_eof();
+    else {
+      DEBUG1("EOF on FD %d", filter->fd);
+      exit(0);
+    }
   }
-  buf[rd] = 0; /* Add an extra NUL for string searches in filter */
-  filter(&ptr, &rd);
-  if(write(out, ptr, rd) != rd) {
-    DEBUG1("Short write on FD %d", out);
-    exit(1);
+  else {
+    buf[rd] = 0; /* Add an extra NUL for string searches in filter */
+    filter->filter(buf, rd);
   }
-  return rd;
 }
 
-void exitfn(void)
+void write_client(char* data, ssize_t size)
+{
+  if(write(CLIENT_OUT, data, size) != size) {
+    DEBUG0("Short write to client");
+    exit(1);
+  }
+  bytes_client += size;
+}
+
+void write_server(char* data, ssize_t size)
+{
+  if(write(SERVER_OUT, data, size) != size) {
+    DEBUG0("Short write to server");
+    exit(1);
+  }
+  bytes_server += size;
+}
+
+static void exitfn(void)
 {
   if(opt_verbose) {
     fprintf(stderr, "%s: client %d server %d\n",
@@ -51,13 +117,13 @@ void usage(const char* message)
   exit(1);
 }
 
-void parse_args(int argc, char* argv[])
+static void parse_args(int argc, char* argv[])
 {
   int opt;
   while((opt = getopt(argc, argv, "v")) != EOF) {
     switch(opt) {
     case 'v':
-      opt_verbose = 1;
+      opt_verbose = true;
       break;
     default:
       usage("Unknown option.");
@@ -73,14 +139,19 @@ int main(int argc, char* argv[])
   parse_args(argc, argv);
   atexit(exitfn);
   for(;;) {
+    struct filter_node* filter;
+    int maxfd = -1;
     FD_ZERO(&fds);
-    FD_SET(0, &fds);
-    FD_SET(6, &fds);
-    if(select(7, &fds, 0, 0, 0) == -1)
+    for(filter = filters; filter; filter = filter->next) {
+      int fd = filter->fd;
+      FD_SET(fd, &fds);
+      if(fd > maxfd)
+	maxfd = fd;
+    }
+    if(select(maxfd+1, &fds, 0, 0, 0) == -1)
       usage("select failed!");
-    if(FD_ISSET(0, &fds))
-      bytes_client += copy_fd(0, 7, filter_client_data);
-    if(FD_ISSET(6, &fds))
-      bytes_server += copy_fd(6, 1, filter_server_data);
+    for(filter = filters; filter; filter = filter->next)
+      if(FD_ISSET(filter->fd, &fds))
+	handle_fd(filter);
   }
 }

@@ -7,14 +7,8 @@ void filter_init(int argc, char** argv)
 {
   if(argc > 0)
     usage("Too many arguments.");
-}
-
-void filter_client_data(char** data, ssize_t* size)
-{
-}
-
-void filter_server_data(char** data, ssize_t* size)
-{
+  add_filter(CLIENT_IN, write_server, 0);
+  add_filter(SERVER_IN, write_client, 0);
 }
 
 void filter_deinit(void)
