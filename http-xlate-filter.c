@@ -330,7 +330,7 @@ void filter_init(int argc, char** argv)
     repls[i].dst = argv[i*2+1];
   }
   repls[i].src = repls[i].dst = 0;
-  add_filter(CLIENT_IN, write_server, 0);
+  add_filter(CLIENT_IN, (filter_fn)write_server, 0);
   add_filter(SERVER_FD, filter_server_data, filter_server_eof);
   calc_lengths();
 }

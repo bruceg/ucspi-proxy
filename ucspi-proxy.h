@@ -12,6 +12,9 @@ typedef int bool;
 #define true ((bool)(0==0))
 #define false ((bool)0)
 
+typedef void (*filter_fn)(char*, ssize_t);
+typedef void (*eof_fn)(void);
+
 #ifdef DEBUG
 #define DEBUGG(ARGS) {fprintf ARGS;}
 #else
@@ -46,8 +49,7 @@ extern void write_client(const char*, ssize_t);
 extern void write_server(const char*, ssize_t);
 extern void writes_client(const char*);
 extern void writes_server(const char*);
-extern bool add_filter(int fd, void(*filter)(char*, ssize_t),
-		       void(*at_eof)(void));
+extern bool add_filter(int fd, filter_fn filter, eof_fn at_eof);
 extern bool del_filter(int fd);
 
 /* Functions from tcp-connect.c */

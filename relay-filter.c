@@ -64,8 +64,8 @@ void accept_client(const char* username)
   /* Turn off all further filtering, as this IP has already authenticated */
   del_filter(CLIENT_IN);
   del_filter(SERVER_FD);
-  add_filter(CLIENT_IN, write_server, 0);
-  add_filter(SERVER_FD, write_client, 0);
+  add_filter(CLIENT_IN, (filter_fn)write_server, 0);
+  add_filter(SERVER_FD, (filter_fn)write_client, 0);
 
   catch_alarm(0);
 }

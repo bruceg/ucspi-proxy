@@ -20,15 +20,15 @@ int SERVER_FD = -1;
 struct filter_node
 {
   int fd;
-  void (*filter)(char*, ssize_t);
-  void (*at_eof)(void);
+  filter_fn filter;
+  eof_fn at_eof;
   
   struct filter_node* next;
 };
 
 struct filter_node* filters = 0;
 
-bool add_filter(int fd, void(*filter)(char*, ssize_t), void(*at_eof)(void))
+bool add_filter(int fd, filter_fn filter, eof_fn at_eof)
 {
   struct filter_node* newnode = malloc(sizeof *filters);
   if(!newnode)
