@@ -16,7 +16,6 @@ man1dir = $(mandir)/man1
 
 install = /usr/bin/install
 
-SOURCES = ucspi-proxy.1
 PROGS = ucspi-proxy ucspi-proxy-log \
 	ucspi-proxy-pop3-relay \
 	ucspi-proxy-imap-relay
@@ -24,6 +23,7 @@ PROGS = ucspi-proxy ucspi-proxy-log \
 SCRIPTS = tcp-proxy log-proxy \
 	pop3-relay-proxy imap-relay-proxy
 	# ftp-proxy
+MAN1S	= ucspi-proxy.1
 
 all: $(PROGS)
 
@@ -52,12 +52,12 @@ ucspi-proxy-imap-relay: ucspi-proxy.o imap-relay-filter.o relay-filter.o
 	$(LD) $(LDFLAGS) -o $@ ucspi-proxy.o imap-relay-filter.o \
 		relay-filter.o $(LIBS)
 
-install:
+install: $(PROGS) $(MAN1S)
 	$(install) -d $(bindir)
 	$(install) -m 755 $(PROGS) $(SCRIPTS) $(bindir)
 
 	$(install) -d $(man1dir)
-	$(install) -m 644 ucspi-proxy.1 $(man1dir)
+	$(install) -m 644 $(MAN1S) $(man1dir)
 
 clean:
 	$(RM) *.o $(PROGS)
