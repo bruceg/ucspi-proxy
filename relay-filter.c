@@ -8,25 +8,27 @@
 
 static unsigned relay_rerun_delay;
 static const char* client_ip;
-static char** relay_command;
+static char* relay_command[3] = { 0, "/bin/true", 0 };
 
 static void run_relay_ctrl(void)
 {
   /* Run relay-ctrl-allow to allow the client's IP to relay */
-  pid_t pid = fork();
-  switch(pid) {
+  const pid_t p = fork();
+  switch (p) {
   case -1:
     return;
   case 0:
     execvp(relay_command[0], relay_command);
     exit(1);
   default:
-    waitpid(pid, 0, 0);
+    waitpid(p, 0, 0);
   }
 }
 
 static void catch_alarm(int ignored)
 {
+  if (relay_command[0] == 0)
+    return;
   /* Run the relay-ctrl process, and then set it up to re-run */
   fprintf(stderr, "%s: Running relay-ctrl-allow\n", program);
   run_relay_ctrl();
@@ -34,16 +36,20 @@ static void catch_alarm(int ignored)
   alarm(relay_rerun_delay);
 }
 
-void relay_init(int argc, char** argv)
+void relay_init(void)
 {
   char* tmp;
-  if(argc < 2)
-    usage("Incorrect usage.");
-  relay_rerun_delay = strtoul(argv[1], &tmp, 10);
   client_ip = getenv("TCPREMOTEIP");
-  if(!relay_rerun_delay || *tmp)
-    usage("Delay parameter is not a positive number");
-  relay_command = argv+2;
+  relay_command[0] = getenv("PROXY_RELAY_COMMAND");
+  if ((tmp = getenv("PROXY_RELAY_ARG")) != 0)
+    relay_command[1] = tmp;
+  if ((tmp = getenv("PROXY_RELAY_INTERVAL")) != 0) {
+    relay_rerun_delay = strtoul(tmp, &tmp, 10);
+    if (*tmp != 0)
+      usage("Delay parameter is not a positive number");
+  }
+  if (relay_rerun_delay == 0)
+    relay_rerun_delay = 300;
 }
 
 void accept_client(const char* username)
@@ -64,7 +70,12 @@ void accept_client(const char* username)
   catch_alarm(0);
 }
 
-void deny_client(void)
+void deny_client(const char* username)
 {
-  fprintf(stderr, "%s: Failed login from %s\n", program, client_ip);
+  if (username)
+    fprintf(stderr, "%s: Failed login from %s, username '%s'\n",
+	    program, client_ip, username);
+  else
+    fprintf(stderr, "%s: Failed login from %s, unknown username\n",
+	    program, client_ip);
 }

@@ -9,9 +9,6 @@
 const char filter_connfail_prefix[] = "* NO ";
 const char filter_connfail_suffix[] = "\r\n";
 
-extern void accept_client(const char* username);
-extern void deny_client(void);
-extern void relay_init(int argc, char** argv);
 extern char* base64decode(char* data, unsigned long size);
 
 static bool saw_auth = 0;
@@ -86,7 +83,7 @@ static void filter_server_data(char* data, ssize_t size)
 	  if(!strncasecmp(resp, "OK ", 3))
 	    accept_client(username);
 	  else
-	    deny_client();
+	    deny_client(username);
 	  free(saved_label);
 	  saved_label = 0;
 	}
@@ -98,7 +95,7 @@ static void filter_server_data(char* data, ssize_t size)
 
 void filter_init(int argc, char** argv)
 {
-  relay_init(argc, argv);
+  relay_init();
   add_filter(CLIENT_IN, filter_client_data, 0);
   add_filter(SERVER_FD, filter_server_data, 0);
 }

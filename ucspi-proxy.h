@@ -53,4 +53,9 @@ extern bool del_filter(int fd);
 /* Functions from tcp-connect.c */
 extern int tcp_connect(void);
 
+/* Functions from relay-filter.c */
+extern void relay_init(void);
+extern void accept_client(const char* username);
+extern void deny_client(const char* username);
+
 #endif

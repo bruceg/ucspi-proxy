@@ -8,9 +8,6 @@
 const char filter_connfail_prefix[] = "-ERR ";
 const char filter_connfail_suffix[] = "\r\n";
 
-extern void accept_client(const char* username);
-extern void deny_client(void);
-extern void relay_init(int argc, char** argv);
 extern char* base64decode(char* data, unsigned long size);
 
 static bool saw_command = 0;
@@ -53,7 +50,7 @@ static void filter_server_data(char* data, ssize_t size)
       saw_command = 0;
     }
     else if (!strncasecmp(data, "-ERR ", 5)) {
-      deny_client();
+      deny_client(username);
       saw_command = 0;
     }
   }
@@ -62,7 +59,7 @@ static void filter_server_data(char* data, ssize_t size)
 
 void filter_init(int argc, char** argv)
 {
-  relay_init(argc, argv);
+  relay_init();
   add_filter(CLIENT_IN, filter_client_data, 0);
   add_filter(SERVER_FD, filter_server_data, 0);
 }
