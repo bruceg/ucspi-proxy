@@ -1,4 +1,5 @@
 #include <errno.h>
+#include <netdb.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <msg/msg.h>
@@ -12,14 +13,17 @@ static long port;
 
 int tcp_connect(const char* host, const char* portstr, unsigned timeout)
 {
+  struct servent* se;
   const char* end;
   int fd;
   iopoll_fd pf;
 
   if (!resolve_ipv4name(host, &addr))
     die3(111, "Could not resolve '", host, "'");
-  if ((port = strtol(portstr, (char**)&end, 10)) <= 0 ||
-      port >= 0xffff || *end != 0)
+  if ((se = getservbyname(portstr, "tcp")) != 0)
+    port = ntohs(se->s_port);
+  else if ((port = strtol(portstr, (char**)&end, 10)) <= 0 ||
+	   port >= 0xffff || *end != 0)
     die2(111, "Invalid port number: ", portstr);
 
   if ((fd = socket_tcp()) == -1)
