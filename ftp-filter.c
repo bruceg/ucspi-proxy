@@ -8,22 +8,14 @@
 #include <unistd.h>
 #include "ucspi-proxy.h"
 
-const char* filter_name = "ucspi-proxy-ftp";
-
-void filter_init(int argc, char** argv)
-{
-  if(argc > 0)
-    usage("Too many arguments.");
-}
-
 static bool was_pasv = false;	/* Last command was "PASV" */
 static bool pasv_mode = false;	/* Data transfer mode is passive */
 static struct sockaddr_in locaddr; /* Local port address */
 static struct sockaddr_in remaddr; /* Remote port address */
-static int sockfd = -1;		/* Socket FD */
-static pid_t child = 0;		/* Forked child PID */
+static int locsock = -1;	/* Local socket FD */
+static int remsock = -1;	/* Remote socket FD */
+static ssize_t copied = 0;	/* Number of bytes copied */
 
-static const char* server_response = 0;	/* Generated server response string */
 static char buf[4096];		/* Generated server response buffer */
 
 static const char* syntax_error =
@@ -70,34 +62,72 @@ static void format_local_address(const char* prefix, const char* suffix)
 
 static bool make_local_socket(void)
 {
-  sockfd = socket(PF_INET, SOCK_STREAM, 0);
-  if(sockfd == -1)
+  int locsize = sizeof locaddr;
+  locsock = socket(PF_INET, SOCK_STREAM, 0);
+  if(locsock == -1)
     return false;
-  memset(&locaddr, 0, sizeof locaddr);
+  remsock = socket(PF_INET, SOCK_STREAM, 0);
+  if(remsock == -1)
+    return false;
+  
+  memset(&locaddr, 0, locsize);
   locaddr.sin_family = AF_INET;
+###NEED TO BIND TO AN ACTUAL ADDRESS, TO REPORT TO CLIENTS
   locaddr.sin_addr.s_addr = INADDR_ANY;
   locaddr.sin_port = 0;
-  return bind(sockfd, (struct sockaddr *)&locaddr, sizeof locaddr) != -1;
-}
-
-static void run_copier(bool to_remote)
-{
-
-  exit(111);
-}
-
-static bool fork_copier(bool to_remote)
-{
-  child = fork();
-  switch(child) {
-  case -1:
+  if(bind(locsock, (struct sockaddr *)&locaddr, locsize))
     return false;
-  case 0:
-    run_copier(to_remote);
-    return true;
-  default:
-    return true;
+  return getsockname(locsock, (struct sockaddr*)&locaddr, &locsize) != -1;
+}
+
+static void close_sockets(void)
+{
+  if(remsock != -1) {
+    del_filter(remsock);
+    close(remsock);
+    remsock = -1;
   }
+  if(locsock != -1) {
+    del_filter(locsock);
+    close(locsock);
+    locsock = -1;
+  }
+}
+
+static void write_remote(char* data, ssize_t size)
+{
+  write(remsock, data, size);
+  copied += size;
+}
+
+static void write_local(char* data, ssize_t size)
+{
+  write(locsock, data, size);
+  copied += size;
+}
+
+static void copy_eof(void)
+{
+  if(opt_verbose)
+    fprintf(stderr, "%s: copied %d bytes\n", filter_name, copied);
+  close_sockets();
+}
+
+static bool start_copier(bool to_remote)
+{
+  if(listen(locsock, 1))
+    return false;
+  if(connect(remsock, &remaddr, sizeof remaddr)) {
+    close_sockets();
+    return false;
+  }
+
+  copied = 0;
+  if(to_remote)
+    add_filter(locsock, write_remote, copy_eof);
+  else
+    add_filter(remsock, write_local, copy_eof);
+  return true;
 }
 
 static bool cmp_command(const char* data, const char* command)
@@ -107,94 +137,93 @@ static bool cmp_command(const char* data, const char* command)
     (data[4] == ' ' || data[4] == '\r' || data[4] == '\n');
 }
 
-static void handle_port_command(char** data, ssize_t* size)
+static void handle_port_command(char* data, ssize_t size)
 {
   pasv_mode = false;
   
   /* Parse command: "PORT h1,h2,h3,h4,p1,p2" */
-  if(!parse_remote_address(*data, ' ')) {
-    server_response = syntax_error;
-    *size = 0;
-    return;
-  }
+  if(!parse_remote_address(data, ' '))
+    write_client(syntax_error, strlen(syntax_error));
   
   /* set up socket to listen on */
-  if(!make_local_socket()) {
-    server_response = temp_error;
-    *size = 0;
-    return;
-  }
+  else if(!make_local_socket())
+    write_client(temp_error, strlen(temp_error));
 
   /* report socket address to server */
-  format_local_address("PORT ", "\r\n");
-  *data = buf;
-  *size = strlen(buf);
+  else {
+    format_local_address("PORT ", "\r\n");
+    write_client(buf, strlen(buf));
+  }
 }
 
-static void handle_pasv_response(char** data, ssize_t* size)
+static void handle_pasv_response(char* data, ssize_t size)
 {
+  was_pasv = false;
+  pasv_mode = true;
+  
   /* Response: "227 Entering Passive Mode (h1,h2,h3,h4,p1,p2)." */
-  if(atoi(*data) != 227 ||
-     !parse_remote_address(*data, '(')) {
-    *data = (char*)syntax_error;
-    *size = strlen(syntax_error);
-    return;
-  }
+  if(atoi(data) != 227 || !parse_remote_address(data, '('))
+    write_client(syntax_error, strlen(syntax_error));
 
   /* set up a socket */
-  if(!make_local_socket()) {
-    *data = (char*) temp_error;
-    *size = strlen(temp_error);
-    return;
-  }
+  else if(!make_local_socket())
+    write_client(temp_error, strlen(temp_error));
   
   /* report socket address to client */
-  format_local_address("227 Entering Passive Mode(", ").\r\n");
-  *data = buf;
-  *size = strlen(buf);
+  else {
+    format_local_address("227 Entering Passive Mode(", ").\r\n");
+    write_client(buf, strlen(buf));
+  }
 }
 
-void filter_client_data(char** data, ssize_t* size)
+static void filter_client_data(char* data, ssize_t size)
 {
-  if(cmp_command(*data, "PORT"))
+  fprintf(stderr, "Client: %s", data);
+  if(cmp_command(data, "PORT"))
     handle_port_command(data, size);
-  else if(cmp_command(*data, "PASV"))
+  else if(cmp_command(data, "PASV")) {
     was_pasv = true;
-  else if(cmp_command(*data, "RETR") ||
-	  cmp_command(*data, "LIST") ||
-	  cmp_command(*data, "NLST")) {
-    if(!fork_copier(!pasv_mode)) {
-      close(sockfd);
-      sockfd = -1;
-      server_response = temp_error;
-      *size = 0;
+    write_server(data, size);
+  }
+  else if(cmp_command(data, "RETR") ||
+	  cmp_command(data, "LIST") ||
+	  cmp_command(data, "NLST")) {
+    if(!start_copier(!pasv_mode)) {
+      close_sockets();
+      write_client(temp_error, strlen(temp_error));
     }
   }
-  else if(cmp_command(*data, "STOR") ||
-	  cmp_command(*data, "APPE") ||
-	  cmp_command(*data, "STOU")) {
-    if(!fork_copier(pasv_mode)) {
-      close(sockfd);
-      sockfd = -1;
-      server_response = temp_error;
-      *size = 0;
+  else if(cmp_command(data, "STOR") ||
+	  cmp_command(data, "APPE") ||
+	  cmp_command(data, "STOU")) {
+    if(!start_copier(pasv_mode)) {
+      close_sockets();
+      write_client(temp_error, strlen(temp_error));
     }
   }
+  else
+    write_server(data, size);
 }
 
-void filter_server_data(char** data, ssize_t* size)
+static void filter_server_data(char* data, ssize_t size)
 {
-  if(server_response) {
-    *data = (char*)server_response;
-    *size = strlen(server_response);
-    server_response = 0;
-  }
-  else if(pasv_mode)
+  fprintf(stderr, "Server: %s", data);
+  if(was_pasv)
     handle_pasv_response(data, size);
+  else
+    write_client(data, size);
+}
+
+const char* filter_name = "ucspi-proxy-ftp";
+
+void filter_init(int argc, char** argv)
+{
+  if(argc > 0)
+    usage("Too many arguments.");
+  add_filter(CLIENT_IN, filter_client_data, 0);
+  add_filter(SERVER_IN, filter_server_data, 0);
 }
 
 void filter_deinit(void)
 {
-  if(child)
-    kill(child, SIGTERM);
 }
