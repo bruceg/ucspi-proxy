@@ -70,6 +70,8 @@ static void handle_fd(struct filter_node* filter)
   char buf[BUFSIZE+1];
   ssize_t rd = read(filter->fd, buf, BUFSIZE);
   if(rd == -1) {
+    if (errno == EAGAIN || errno == EINTR)
+      return;
     MSG1("Error encountered on FD %d", filter->fd);
     exit(1);
   }
