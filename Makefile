@@ -21,8 +21,9 @@ PROGS = ucspi-proxy ucspi-proxy-log \
 	ucspi-proxy-pop3-relay \
 	ucspi-proxy-imap-relay
 	# ucspi-proxy-ftp
-SCRIPTS = tcp-proxy ftp-proxy log-proxy \
+SCRIPTS = tcp-proxy log-proxy \
 	pop3-relay-proxy imap-relay-proxy
+	# ftp-proxy
 
 all: $(PROGS)
 

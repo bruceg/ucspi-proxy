@@ -6,5 +6,5 @@ Changes in version 0.91
 
 - Added logging proxy, which writes all data to stderr.
 
-- Fixed typo in ucspi-tcp script.
+- Fixed typo in tcp-proxy script.
 -------------------------------------------------------------------------------
