@@ -18,7 +18,8 @@ install = /usr/bin/install
 
 PROGS = ucspi-proxy ucspi-proxy-log \
 	ucspi-proxy-pop3-relay \
-	ucspi-proxy-imap-relay
+	ucspi-proxy-imap-relay \
+	ucspi-proxy-http-xlate
 	# ucspi-proxy-ftp
 SCRIPTS = tcp-proxy log-proxy \
 	pop3-relay-proxy imap-relay-proxy
@@ -34,6 +35,7 @@ relay-filter.o: relay-filter.c ucspi-proxy.h
 pop3-relay-filter.o: pop3-relay-filter.c ucspi-proxy.h
 imap-relay-filter.o: imap-relay-filter.c ucspi-proxy.h
 ftp-filter.o: ftp-filter.c ucspi-proxy.h
+http-xlate-filter.o: http-xlate-filter.c ucspi-proxy.h
 
 ucspi-proxy: ucspi-proxy.o null-filter.o
 	$(LD) $(LDFLAGS) -o $@ ucspi-proxy.o null-filter.o $(LIBS)
@@ -51,6 +53,9 @@ ucspi-proxy-pop3-relay: ucspi-proxy.o pop3-relay-filter.o relay-filter.o
 ucspi-proxy-imap-relay: ucspi-proxy.o imap-relay-filter.o relay-filter.o
 	$(LD) $(LDFLAGS) -o $@ ucspi-proxy.o imap-relay-filter.o \
 		relay-filter.o $(LIBS)
+
+ucspi-proxy-http-xlate: ucspi-proxy.o http-xlate-filter.o relay-filter.o
+	$(LD) $(LDFLAGS) -o $@ ucspi-proxy.o http-xlate-filter.o $(LIBS)
 
 install: $(PROGS) $(MAN1S)
 	$(install) -d $(bindir)
