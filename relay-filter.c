@@ -5,6 +5,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <msg/msg.h>
+#include <unix/sig.h>
 #include "ucspi-proxy.h"
 
 static unsigned relay_rerun_delay;
@@ -17,13 +18,18 @@ static void run_relay_ctrl(void)
   const pid_t p = fork();
   switch (p) {
   case -1:
+    error1sys("Could not fork");
     return;
   case 0:
     execvp(relay_command[0], relay_command);
     exit(1);
-  default:
-    waitpid(p, 0, 0);
   }
+}
+
+static void catch_child(int ignored)
+{
+  waitpid(-1, 0, WNOHANG);
+  ignored = 0;
 }
 
 static void catch_alarm(int ignored)
@@ -34,8 +40,8 @@ static void catch_alarm(int ignored)
   if (opt_verbose)
     msg2("Running ", relay_command[0]);
   run_relay_ctrl();
-  signal(SIGALRM, catch_alarm);
   alarm(relay_rerun_delay);
+  ignored = 0;
 }
 
 void relay_init(int argc, char* argv[])
@@ -67,6 +73,9 @@ void accept_client(const char* username)
   set_filter(CLIENT_IN, (filter_fn)write_server, 0);
   set_filter(SERVER_FD, (filter_fn)write_client, 0);
 
+  sig_child_catch(catch_child);
+  sig_alarm_catch(catch_alarm);
+  signal(SIGALRM, catch_alarm);
   catch_alarm(0);
 }
 
