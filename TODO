@@ -1,0 +1,2 @@
+- Add proxy modules (such as FTP) that can translate addresses and open
+  new sockets when passing data through.

@@ -1,0 +1,25 @@
+ucspi-proxy
+Connection proxy for UCSPI tools
+Bruce Guenter <bruceg@em.ca>
+Version 0.90
+2000-06-21
+
+This package contains a proxy program that passes data back and forth
+between two connections set up by a UCSPI server and a UCSPI client.
+
+How to install:
+
+- As root, run "make install"
+
+Usage:
+
+The simple usage is:
+	UCSPIserver [address] UCSPIclient [address] ucspi-proxy
+Replace "UCSPIserver" with the program that will accept connections, and
+"UCSPIclient" with the program that will make connections.  See the
+"tcp-proxy" script for a TCP-TCP proxy example.
+
+This program is Copyright(C) 2000 Bruce Guenter, and may be copied
+according to the GNU GENERAL PUBLIC LICENSE (GPL) Version 2 or a later
+version.  A copy of this license is included with this package.  This
+package comes with no warranty of any kind.
