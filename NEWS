@@ -1,4 +1,9 @@
 -------------------------------------------------------------------------------
+Changes in version 0.94
+
+- Fixed a bug in the core ucspi-proxy client write routine that treated
+  an interrupted (short) write as a failure.
+-------------------------------------------------------------------------------
 Changes in version 0.93
 
 - The relay proxy programs now take the relay rerun delay and relay

@@ -86,9 +86,19 @@ static void handle_fd(struct filter_node* filter)
 
 void write_client(char* data, ssize_t size)
 {
-  if(write(CLIENT_OUT, data, size) != size) {
-    DEBUG0("Short write to client");
-    exit(1);
+  while(size > 0) {
+    ssize_t wr = write(CLIENT_OUT, data, size);
+    switch(wr) {
+    case 0:
+      DEBUG0("Short write to client");
+      exit(1);
+    case -1:
+      DEBUG0("Write to client failed");
+      exit(1);
+    default:
+      data += wr;
+      size -= wr;
+    }
   }
   bytes_client += size;
 }
