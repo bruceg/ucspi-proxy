@@ -1,1 +1,5 @@
 - Complete FTP proxy module
+
+- NEWS NOTE:
+  - Added FTP proxy, which should be able to handle all combinations of
+    the APPE, LIST, NLST, PASV, PORT, RETR, STOR, and STOU commands.

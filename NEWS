@@ -1,8 +1,8 @@
 -------------------------------------------------------------------------------
 Changes in version 0.91
 
-- Added FTP proxy, which should be able to handle all combinations of
-  the APPE, LIST, NLST, PASV, PORT, RETR, STOR, and STOU commands.
+- Added POP3 and IMAP proxies which trigger relay-ctrl-allow on
+  successful logins.
 
 - Added logging proxy, which writes all data to stderr.
 
