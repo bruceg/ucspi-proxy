@@ -163,20 +163,18 @@ void writes_server(const char* data)
 
 static void exitfn(void)
 {
-  if (opt_verbose) {
-    char line[42+FMT_ULONG_LEN*4];
-    int i;
-    memcpy(line, "bytes: client->server ", 22); i = 22;
-    i += fmt_udec(line+i, bytes_client_in);
-    line[i++] = '-'; line[i++] = '>';
-    i += fmt_udec(line+i, bytes_server_out);
-    memcpy(line+i, " server->client ", 16); i += 16;
-    i += fmt_udec(line+i, bytes_server_in);
-    line[i++] = '-'; line[i++] = '>';
-    i += fmt_udec(line+i, bytes_client_out);
-    line[i] = 0;
-    msg1(line);
-  }
+  char line[42+FMT_ULONG_LEN*4];
+  int i;
+  memcpy(line, "bytes: client->server ", 22); i = 22;
+  i += fmt_udec(line+i, bytes_client_in);
+  line[i++] = '-'; line[i++] = '>';
+  i += fmt_udec(line+i, bytes_server_out);
+  memcpy(line+i, " server->client ", 16); i += 16;
+  i += fmt_udec(line+i, bytes_server_in);
+  line[i++] = '-'; line[i++] = '>';
+  i += fmt_udec(line+i, bytes_client_out);
+  line[i] = 0;
+  msg1(line);
   filter_deinit();
 }
 
