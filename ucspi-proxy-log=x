@@ -1,5 +1,6 @@
 log-filter.o
 ucspi-proxy.a
+-lbg-str
 -lbg-msg
 -lbg-iobuf
 -lbg-net

@@ -6,6 +6,7 @@
 #include <string.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <str/str.h>
 #include "ucspi-proxy.h"
 
 const int msg_show_pid = 1;
@@ -144,9 +145,13 @@ void usage(const char* message)
 
 static void connfail(void)
 {
-  writes_client(filter_connfail_prefix);
-  writes_client(strerror(errno));
-  writes_client(filter_connfail_suffix);
+  str buf = {0,0,0};
+  str_copy4s(&buf,
+	     filter_connfail_prefix,
+	     "Connection to server failed: ",
+	     strerror(errno),
+	     filter_connfail_suffix);
+  write_client(buf.s, buf.len);
   exit(0);
 }
 
