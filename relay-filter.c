@@ -1,4 +1,5 @@
 #include <signal.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -37,6 +38,8 @@ static void catch_alarm(int ignored)
 
 void accept_client(void)
 {
+  fprintf(stderr, "%s: Accepted relay client %s\n", filter_name, client_ip);
+
   /* Turn off all further filtering, as this IP has already authenticated */
   del_filter(CLIENT_IN);
   del_filter(SERVER_IN);
@@ -44,4 +47,9 @@ void accept_client(void)
   add_filter(SERVER_IN, write_client, 0);
 
   catch_alarm(0);
+}
+
+void deny_client(void)
+{
+  fprintf(stderr, "%s: Failed login from %s\n", filter_name, client_ip);
 }
