@@ -1,6 +1,8 @@
 -------------------------------------------------------------------------------
 Changes in version 0.94
 
+- Added a translating HTTP proxy.
+
 - Fixed a bug in the core ucspi-proxy client write routine that treated
   an interrupted (short) write as a failure.
 -------------------------------------------------------------------------------
