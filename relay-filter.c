@@ -6,11 +6,9 @@
 #include <unistd.h>
 #include "ucspi-proxy.h"
 
-static const char* relay_ctrl_allow = "/usr/sbin/relay-ctrl-allow";
-static const char* true_path = "/bin/true";
-static const unsigned relay_rerun_delay = 5 * 60;
-
-extern const char* client_ip;
+static unsigned relay_rerun_delay;
+static const char* client_ip;
+static char** relay_command;
 
 static void run_relay_ctrl(void)
 {
@@ -21,7 +19,7 @@ static void run_relay_ctrl(void)
     return;
   case 0:
     setenv("TCPREMOTEIP", client_ip, 1);
-    execl(relay_ctrl_allow, relay_ctrl_allow, true_path, 0);
+    execvp(relay_command[0], relay_command);
     exit(1);
   default:
     waitpid(pid, 0, 0);
@@ -31,9 +29,22 @@ static void run_relay_ctrl(void)
 static void catch_alarm(int ignored)
 {
   /* Run the relay-ctrl process, and then set it up to re-run */
+  fprintf(stderr, "%s: Running relay-ctrl-allow\n", filter_name);
   run_relay_ctrl();
   signal(SIGALRM, catch_alarm);
   alarm(relay_rerun_delay);
+}
+
+void relay_init(int argc, char** argv)
+{
+  char* tmp;
+  if(argc < 3)
+    usage("Incorrect usage.");
+  client_ip = argv[0];
+  relay_rerun_delay = strtoul(argv[1], &tmp, 10);
+  if(!relay_rerun_delay || *tmp)
+    usage("Delay parameter is not a positive number");
+  relay_command = argv+2;
 }
 
 void accept_client(void)

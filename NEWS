@@ -1,4 +1,13 @@
 -------------------------------------------------------------------------------
+Changes in version 0.93
+
+- The relay proxy programs now take the relay rerun delay and relay
+  authorization command as command-line parameters, rather than being
+  hard-coded into the programs.
+
+- Fixed a bug in the Makefile that would make "make install" fail if you
+  didn't run "make" first.
+-------------------------------------------------------------------------------
 Changes in version 0.92
 
 - Added support in the POP3 relay proxy for the "AUTH" command, used by

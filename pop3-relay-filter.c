@@ -6,9 +6,9 @@
 
 extern void accept_client(void);
 extern void deny_client(void);
+extern void relay_init(int argc, char** argv);
 
 static bool saw_command = 0;
-const char* client_ip = 0;
 
 static void filter_client_data(char* data, ssize_t size)
 {
@@ -38,9 +38,7 @@ const char* filter_usage = "client-ip";
 
 void filter_init(int argc, char** argv)
 {
-  if(argc != 1)
-    usage("Incorrect usage.");
-  client_ip = argv[0];
+  relay_init(argc, argv);
   add_filter(CLIENT_IN, filter_client_data, 0);
   add_filter(SERVER_IN, filter_server_data, 0);
 }

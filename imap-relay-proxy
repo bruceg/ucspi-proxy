@@ -11,4 +11,5 @@ shift 2
 exec envuidgid nobody \
 tcpserver -HRUllocalhost "$@" $localhost 143 \
 	sh -c "exec tcpclient -HRllocalhost $remotehost 143 \
-	$prefix/ucspi-proxy-imap-relay \$TCPREMOTEIP"
+	$prefix/ucspi-proxy-imap-relay \$TCPREMOTEIP \
+	300 /usr/sbin/relay-ctrl-allow /bin/true"

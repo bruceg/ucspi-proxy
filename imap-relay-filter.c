@@ -7,8 +7,8 @@
 
 extern void accept_client(void);
 extern void deny_client(void);
+extern void relay_init(int argc, char** argv);
 
-const char* client_ip = 0;
 static char* label = 0;
 static ssize_t label_size = 0;
 static char* saved_label = 0;
@@ -68,13 +68,11 @@ static void filter_server_data(char* data, ssize_t size)
 }
 
 const char* filter_name = "ucspi-proxy-imap-relay";
-const char* filter_usage = "client-ip";
+const char* filter_usage = "client-ip delay command [args ...]";
 
 void filter_init(int argc, char** argv)
 {
-  if(argc != 1)
-    usage("Incorrect usage.");
-  client_ip = argv[0];
+  relay_init(argc, argv);
   add_filter(CLIENT_IN, filter_client_data, 0);
   add_filter(SERVER_IN, filter_server_data, 0);
 }
