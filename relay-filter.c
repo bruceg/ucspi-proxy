@@ -18,7 +18,6 @@ static void run_relay_ctrl(void)
   case -1:
     return;
   case 0:
-    setenv("TCPREMOTEIP", client_ip, 1);
     execvp(relay_command[0], relay_command);
     exit(1);
   default:
@@ -38,10 +37,10 @@ static void catch_alarm(int ignored)
 void relay_init(int argc, char** argv)
 {
   char* tmp;
-  if(argc < 3)
+  if(argc < 2)
     usage("Incorrect usage.");
-  client_ip = argv[0];
   relay_rerun_delay = strtoul(argv[1], &tmp, 10);
+  client_ip = getenv("TCPREMOTEIP");
   if(!relay_rerun_delay || *tmp)
     usage("Delay parameter is not a positive number");
   relay_command = argv+2;
