@@ -123,21 +123,27 @@ static void handle_fd(struct filter_node* filter)
   }
 }
 
-void write_client(const char* data, ssize_t size)
+static void retry_write(const char* data, ssize_t size,
+			int fd, const char* name, unsigned long* counter)
 {
   while(size > 0) {
-    ssize_t wr = write(CLIENT_OUT, data, size);
+    ssize_t wr = write(fd, data, size);
     switch(wr) {
     case 0:
-      die1(1, "Short write to client");
+      die2(1, "Short write to ", name);
     case -1:
-      die1sys(1, "Write to client failed");
+      die2sys(1, "Error writing to ", name);
     default:
       data += wr;
       size -= wr;
-      bytes_client_out += wr;
+      *counter += wr;
     }
   }
+}
+
+void write_client(const char* data, ssize_t size)
+{
+  retry_write(data, size, CLIENT_OUT, "client", &bytes_client_out);
 }
 
 void writes_client(const char* data)
@@ -147,9 +153,7 @@ void writes_client(const char* data)
 
 void write_server(const char* data, ssize_t size)
 {
-  if(write(SERVER_FD, data, size) != size)
-    die1sys(1, "Short write to server");
-  bytes_server_out += size;
+  retry_write(data, size, SERVER_FD, "server", &bytes_server_out);
 }
 
 void writes_server(const char* data)
