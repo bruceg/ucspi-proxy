@@ -1,4 +1,12 @@
 -------------------------------------------------------------------------------
+Changes in version 0.92
+
+- Added support in the POP3 relay proxy for the "AUTH" command, used by
+  CRAM-MD5 logins.
+
+- All proxies now ignore several harmless signals that otherwise would
+  kill the proxy.
+-------------------------------------------------------------------------------
 Changes in version 0.91
 
 - Added POP3 and IMAP proxies which trigger relay-ctrl-allow on
