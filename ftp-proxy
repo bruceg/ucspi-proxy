@@ -9,6 +9,6 @@ localhost=$1
 remotehost=$2
 shift 2
 exec envuidgid nobody \
-tcpserver -H -R -U -llocalhost "$@" $localhost 21 \
-	tcpclient -H -R -llocalhost $remotehost 21 \
+tcpserver -HRUllocalhost "$@" $localhost 21 \
+	tcpclient -HRllocalhost $remotehost 21 \
 	$prefix/ucspi-proxy-ftp

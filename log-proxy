@@ -11,6 +11,6 @@ remotehost=$3
 remoteport=$4
 shift 4
 exec envuidgid nobody \
-tcpserver -H -R -U -llocalhost "$@" $localhost $localport \
-	tcpclient -H -R -llocalhost $remotehost $remoteport \
+tcpserver -HRUllocalhost "$@" $localhost $localport \
+	tcpclient -HRllocalhost $remotehost $remoteport \
 	$prefix/ucspi-proxy-log

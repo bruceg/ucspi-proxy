@@ -9,6 +9,6 @@ localhost=$1
 remotehost=$2
 shift 2
 exec envuidgid nobody \
-tcpserver -H -R -U -llocalhost "$@" $localhost 143 \
-	sh -c "exec tcpclient -H -R -llocalhost $remotehost 143 \
+tcpserver -HRUllocalhost "$@" $localhost 143 \
+	sh -c "exec tcpclient -HRllocalhost $remotehost 143 \
 	$prefix/ucspi-proxy-imap-relay \$TCPREMOTEIP"
