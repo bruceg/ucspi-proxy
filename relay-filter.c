@@ -31,7 +31,8 @@ static void catch_alarm(int ignored)
   if (relay_command == 0)
     return;
   /* Run the relay-ctrl process, and then set it up to re-run */
-  msg1("Running relay-ctrl-allow");
+  if (opt_verbose)
+    msg2("Running ", relay_command[0]);
   run_relay_ctrl();
   signal(SIGALRM, catch_alarm);
   alarm(relay_rerun_delay);
@@ -55,10 +56,12 @@ void relay_init(int argc, char* argv[])
 
 void accept_client(const char* username)
 {
-  if (username)
-    msg5("Accepted relay client ", client_ip, ", username '", username, "'");
-  else
-    msg3("Accepted relay client ", client_ip, ", username unknown");
+  if (opt_verbose) {
+    if (username)
+      msg5("Accepted relay client ", client_ip, ", username '", username, "'");
+    else
+      msg3("Accepted relay client ", client_ip, ", username unknown");
+  }
   
   /* Turn off all further filtering, as this IP has already authenticated */
   set_filter(CLIENT_IN, (filter_fn)write_server, 0);
@@ -69,8 +72,10 @@ void accept_client(const char* username)
 
 void deny_client(const char* username)
 {
-  if (username)
-    msg5("Failed login from ", client_ip, ", username '", username, "'");
-  else
-    msg3("Failed login from ", client_ip, ", username unknown");
+  if (opt_verbose) {
+    if (username)
+      msg5("Failed login from ", client_ip, ", username '", username, "'");
+    else
+      msg3("Failed login from ", client_ip, ", username unknown");
+  }
 }
