@@ -1,4 +1,4 @@
-#include <sys/types.h>
+#include <sysdeps.h>
 #include <errno.h>
 #include <signal.h>
 #include <stdio.h>
@@ -126,9 +126,19 @@ static void handle_fd(struct filter_node* filter)
 static void retry_write(const char* data, ssize_t size,
 			int fd, const char* name, unsigned long* counter)
 {
+  ssize_t wr;
+  iopoll_fd io;
+  io.fd = fd;
   while(size > 0) {
-    ssize_t wr = write(fd, data, size);
-    switch(wr) {
+    io.events = IOPOLL_WRITE;
+    io.revents = 0;
+    switch (iopoll(&io, 1, -1)) {
+    case -1:
+      die1sys(1, "Poll failed");
+    case 0:
+      die2(1, "Connection closed during write to ", name);
+    }
+    switch (wr = write(fd, data, size)) {
     case 0:
       die2(1, "Short write to ", name);
     case -1:
