@@ -87,13 +87,8 @@ static void filter_server_data(char* data, ssize_t size)
   write_client(data, size);
 }
 
-void filter_init(int argc, char** argv)
+void imap_filter_init(void)
 {
-  relay_init(argc, argv);
   add_filter(CLIENT_IN, filter_client_data, 0);
   add_filter(SERVER_FD, filter_server_data, 0);
-}
-
-void filter_deinit(void)
-{
 }
