@@ -16,8 +16,8 @@ man1dir = $(mandir)/man1
 
 install = /usr/bin/install
 
-PROGS = ucspi-proxy
 SOURCES = ucspi-proxy.c null-filter.c ucspi-proxy.h ucspi-proxy.1
+PROGS = ucspi-proxy
 SCRIPTS = tcp-proxy
 
 all: $(PROGS)
@@ -27,7 +27,7 @@ ucspi-proxy: ucspi-proxy.o null-filter.o
 
 install:
 	$(install) -d $(bindir)
-	$(install) -m 755 $(PROGS) $(bindir)
+	$(install) -m 755 $(PROGS) $(SCRIPTS) $(bindir)
 
 	$(install) -d $(man1dir)
 	$(install) -m 644 ucspi-proxy.1 $(man1dir)

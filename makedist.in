@@ -21,6 +21,9 @@ EXTRAS="ChangeLog NEWS README TODO"
 # the version-numbered directory in the destination site.
 EXTRAS_VER="ANNOUNCEMENT"
 
+# Set EXTRAS_DIST to a list of extra files to go into the distribution
+EXTRAS_DIST="COPYING"
+
 VERSION_BASE=
 
 # Set HOSTNAME to the name of the host to which to connect via ssh
