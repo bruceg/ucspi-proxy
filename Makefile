@@ -28,15 +28,15 @@ MAN1S	= ucspi-proxy-http-xlate.1 ucspi-proxy.1
 
 all: $(PROGS)
 
-ucspi-proxy.o: ucspi-proxy.c ucspi-proxy.h
-null-filter.o: null-filter.c ucspi-proxy.h
-log-filter.o: log-filter.c ucspi-proxy.h
-relay-filter.o: relay-filter.c ucspi-proxy.h
-pop3-relay-filter.o: pop3-relay-filter.c ucspi-proxy.h
-imap-relay-filter.o: imap-relay-filter.c ucspi-proxy.h
+base64.o: base64.c
 ftp-filter.o: ftp-filter.c ucspi-proxy.h
 http-xlate-filter.o: http-xlate-filter.c ucspi-proxy.h
-base64.o: base64.c
+imap-relay-filter.o: imap-relay-filter.c ucspi-proxy.h
+log-filter.o: log-filter.c ucspi-proxy.h
+null-filter.o: null-filter.c ucspi-proxy.h
+pop3-relay-filter.o: pop3-relay-filter.c ucspi-proxy.h
+relay-filter.o: relay-filter.c ucspi-proxy.h
+ucspi-proxy.o: ucspi-proxy.c ucspi-proxy.h
 
 ucspi-proxy: ucspi-proxy.o null-filter.o
 	$(LD) $(LDFLAGS) -o $@ ucspi-proxy.o null-filter.o $(LIBS)
