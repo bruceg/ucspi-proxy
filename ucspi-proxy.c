@@ -29,6 +29,7 @@ struct filter_node
   int fd;
   filter_fn filter;
   eof_fn at_eof;
+  char* name;
   
   struct filter_node* next;
 };
@@ -44,6 +45,15 @@ static bool new_filter(int fd, filter_fn filter, eof_fn at_eof)
   newnode->filter = filter;
   newnode->at_eof = at_eof;
   newnode->next = 0;
+  if (fd == CLIENT_IN)
+    newnode->name = "client";
+  else if (fd == SERVER_FD)
+    newnode->name = "server";
+  else {
+    newnode->name = malloc(4 + fmt_udec(0, fd));
+    strcpy(newnode->name, "FD#");
+    newnode->name[fmt_udec(newnode->name+3, fd)+3] = 0;
+  }
   if(!filters)
     filters = newnode;
   else {
@@ -78,18 +88,12 @@ bool del_filter(int fd)
 	prev->next = curr->next;
       else
 	filters = curr->next;
+      free(curr->name);
       free(curr);
       return true;
     }
   }
   return false;
-}
-
-static void msg2n(const char* a, unsigned long b)
-{
-  char num[FMT_ULONG_LEN];
-  num[fmt_udec(num, b)] = 0;
-  msg2(a, num);
 }
 
 static void handle_fd(struct filter_node* filter)
@@ -99,11 +103,11 @@ static void handle_fd(struct filter_node* filter)
   if(rd == -1) {
     if (errno == EAGAIN || errno == EINTR)
       return;
-    if (opt_verbose) msg2n("Error encountered on FD ", filter->fd);
+    die2sys(1, "Error reading from ", filter->name);
     exit(1);
   }
   if(rd == 0) {
-    if (opt_verbose) msg2n("EOF on FD ", filter->fd);
+    if (opt_verbose) msg2(filter->name, " hangup");
     if(filter->at_eof)
       filter->at_eof();
     else
@@ -125,11 +129,9 @@ void write_client(const char* data, ssize_t size)
     ssize_t wr = write(CLIENT_OUT, data, size);
     switch(wr) {
     case 0:
-      if (opt_verbose) msg1("Short write to client");
-      exit(1);
+      die1(1, "Short write to client");
     case -1:
-      if (opt_verbose) msg1("Write to client failed");
-      exit(1);
+      die1sys(1, "Write to client failed");
     default:
       data += wr;
       size -= wr;
@@ -145,10 +147,8 @@ void writes_client(const char* data)
 
 void write_server(const char* data, ssize_t size)
 {
-  if(write(SERVER_FD, data, size) != size) {
-    if (opt_verbose) msg1("Short write to server");
-    exit(1);
-  }
+  if(write(SERVER_FD, data, size) != size)
+    die1sys(1, "Short write to server");
   bytes_server_out += size;
 }
 
