@@ -1,4 +1,5 @@
 #include <errno.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
@@ -137,6 +138,9 @@ static void parse_args(int argc, char* argv[])
 int main(int argc, char* argv[])
 {
   fd_set fds;
+  signal(SIGALRM, SIG_IGN);
+  signal(SIGHUP, SIG_IGN);
+  signal(SIGPIPE, SIG_IGN);
   parse_args(argc, argv);
   atexit(exitfn);
   for(;;) {
