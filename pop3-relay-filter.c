@@ -7,24 +7,28 @@
 extern void accept_client(void);
 extern void deny_client(void);
 
-static bool saw_pass = 0;
+static bool saw_command = 0;
 const char* client_ip = 0;
 
 static void filter_client_data(char* data, ssize_t size)
 {
-  if(!strncasecmp(data, "PASS ", 5))
-    saw_pass = 1;
+  if(!strncasecmp(data, "PASS ", 5) ||
+     !strncasecmp(data, "AUTH ", 5))
+    saw_command = 1;
   write_server(data, size);
 }
 
 static void filter_server_data(char* data, ssize_t size)
 {
-  if(saw_pass) {
-    if(!strncasecmp(data, "+OK ", 4))
+  if(saw_command) {
+    if(!strncasecmp(data, "+OK ", 4)) {
       accept_client();
-    else
+      saw_command = 0;
+    }
+    else if(!strncasecmp(data, "-ERR ", 5)) {
       deny_client();
-    saw_pass = 0;
+      saw_command = 0;
+    }
   }
   write_client(data, size);
 }
