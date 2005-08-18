@@ -1,0 +1,10 @@
+>bin
+c:::755::ucspi-proxy-http-xlate
+c:::755::ucspi-proxy-imap
+c:::755::ucspi-proxy-log
+c:::755::ucspi-proxy-pop3
+
+>man
+d:::755:man1
+c:::644:man1:ucspi-proxy-http-xlate.1
+c:::644:man1:ucspi-proxy.1
