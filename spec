@@ -4,11 +4,11 @@ Version: @VERSION@
 Release: 1
 Copyright: GPL
 Group: Utilities/System
-Source: http://em.ca/~bruceg/ucspi-proxy/%{version}/ucspi-proxy-%{version}.tar.gz
+Source: http://untroubled.org/ucspi-proxy/ucspi-proxy-%{version}.tar.gz
 BuildRoot: ${_tmppath}/ucspi-proxy-root
-URL: http://em.ca/~bruceg/ucspi-proxy/
-Packager: Bruce Guenter <bruceg@em.ca>
-BuildRequires: bglibs >= 1.015
+URL: http://untroubled.org/ucspi-proxy/
+Packager: Bruce Guenter <bruce@untroubled.org>
+BuildRequires: bglibs >= 1.025
 
 %description
 This package contains a proxy program that passes data back and forth
