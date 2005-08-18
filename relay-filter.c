@@ -75,7 +75,6 @@ void accept_client(const char* username)
 
   sig_child_catch(catch_child);
   sig_alarm_catch(catch_alarm);
-  signal(SIGALRM, catch_alarm);
   catch_alarm(0);
 }
 
