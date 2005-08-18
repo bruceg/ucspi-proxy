@@ -106,7 +106,7 @@ static void free_buffers(buffer_list* list)
   list->head = list->tail = 0;
 }
 
-static buffer* merge_buffers(buffer_list* list)
+static buffer* merge_buffers(buffer_list* blist)
 {
   buffer* newbuf;
   size_t total;
@@ -114,22 +114,22 @@ static buffer* merge_buffers(buffer_list* list)
   buffer* buf;
 
   total = 0;
-  for (buf = list->head; buf; buf = buf->next)
+  for (buf = blist->head; buf; buf = buf->next)
     total += buf->len;
   newbuf = new_buffer(total, 0);
 
-  for (ptr=newbuf->buf, buf=list->head; buf; ptr+=buf->len, buf=buf->next)
+  for (ptr=newbuf->buf, buf=blist->head; buf; ptr+=buf->len, buf=buf->next)
     memcpy(ptr, buf->buf, buf->len);
 
   return newbuf;
 }
 
-static void parse_header(buffer_list* buffers)
+static void parse_header(buffer_list* blist)
 {
   size_t left;
   char* data;
   
-  header = merge_buffers(buffers);
+  header = merge_buffers(blist);
 
   left = header->len;
   data = header->buf;
@@ -212,7 +212,7 @@ static buffer* xlate_buffer(buffer* in)
   return out;
 }
 
-static void write_response(buffer* header, buffer* content)
+static void write_response(buffer* hdrbuf, buffer* content)
 {
   static char buf[30];
   char* ptr;
@@ -222,22 +222,22 @@ static void write_response(buffer* header, buffer* content)
     for (i = content->len, ptr = buf+29; i; i /= 10)
       *--ptr = (i % 10) + '0';
     buf[29] = 0;
-    write_client(header->buf, content_length_offset);
+    write_client(hdrbuf->buf, content_length_offset);
     write_client(ptr, buf+30-ptr);
-    write_client(header->buf + content_length_end,
-		 header->len - content_length_end);
+    write_client(hdrbuf->buf + content_length_end,
+		 hdrbuf->len - content_length_end);
   }
   else
-    write_client(header->buf, header->len);
+    write_client(hdrbuf->buf, hdrbuf->len);
   write_client(content->buf, content->len);
 }
 
-static void parse_content(buffer_list* buffers)
+static void parse_content(buffer_list* blist)
 {
   buffer* content;
   buffer* xlated;
 
-  content = merge_buffers(buffers);
+  content = merge_buffers(blist);
   xlated = xlate_buffer(content);
   free_buffer(content);
   write_response(header, xlated);
