@@ -16,6 +16,10 @@ A mailing list archive is available at:
 Development versions of @PACKAGE@ are available via Subversion at:
 	svn://bruce-guenter.dyndns.org/@PACKAGE@/trunk
 
+Requirements:
+
+- bglibs version 1.025 or later
+
 How to install:
 
 - As root, run "make install"
