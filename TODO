@@ -1,7 +1,5 @@
 - Switch from select to iopoll
 
-- Catch SIGCHLD in relay-ctrl
-
 - Write/fix man pages
 
 - Support UCSPI PROTO other than TCP
