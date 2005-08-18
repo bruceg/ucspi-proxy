@@ -20,24 +20,21 @@ between two connections set up by a UCSPI server and a UCSPI client.
 %build
 echo "gcc $RPM_OPT_FLAGS" >conf-cc
 echo "gcc $RPM_OPT_FLAGS -s" >conf-ld
+echo %{_bindir} >conf-bin
+echo %{_mandir} >conf-man
 make
 
 %install
 rm -fr $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT/%{_bindir}
 mkdir -p $RPM_BUILD_ROOT/%{_mandir}
-echo $RPM_BUILD_ROOT/%{_bindir} >conf-bin
-echo $RPM_BUILD_ROOT/%{_mandir} >conf-man
-rm -f insthier.o conf_*.c installer instcheck
-make
-./installer
-./instcheck
+make install install_prefix=$RPM_BUILD_ROOT
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root)
-%doc COPYING README TODO
+%doc ANNOUNCEMENT COPYING NEWS README TODO
 %{_bindir}/*
 %{_mandir}/*/*
