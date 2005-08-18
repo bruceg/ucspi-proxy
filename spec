@@ -5,7 +5,7 @@ Release: 1
 Copyright: GPL
 Group: Utilities/System
 Source: http://untroubled.org/ucspi-proxy/ucspi-proxy-%{version}.tar.gz
-BuildRoot: ${_tmppath}/ucspi-proxy-root
+BuildRoot: %{_tmppath}/ucspi-proxy-root
 URL: http://untroubled.org/ucspi-proxy/
 Packager: Bruce Guenter <bruce@untroubled.org>
 BuildRequires: bglibs >= 1.025
