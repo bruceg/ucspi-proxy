@@ -1,7 +1,8 @@
+#include <sysdeps.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/types.h>
+#include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <msg/msg.h>
@@ -60,6 +61,35 @@ void relay_init(int argc, char* argv[])
   }
 }
 
+static void setenvb(const char* name, const char* value, size_t len)
+{
+  char* s;
+  size_t nlen = strlen(name);
+  if ((s = malloc(len + nlen + 2)) == 0)
+    die_oom(111);
+  memcpy(s, name, nlen);
+  s[nlen++] = '=';
+  memcpy(s + nlen, value, len);
+  s[nlen + len] = 0;
+  if (putenv(s) != 0)
+    die_oom(111);
+}
+
+/* Export the username through $USER and $DOMAIN */
+static void export_client(const char* username)
+{
+  const char* at;
+  if ((at = strrchr(username, '@')) == 0) {
+    setenvb("USER", username, strlen(username));
+    setenvb("DOMAIN", 0, 0);
+  }
+  else {
+    setenvb("USER", username, at - username);
+    ++at;
+    setenvb("DOMAIN", at, strlen(at));
+  }
+}
+
 void accept_client(const char* username)
 {
   if (opt_verbose) {
@@ -68,6 +98,7 @@ void accept_client(const char* username)
     else
       msg3("Accepted relay client ", client_ip, ", username unknown");
   }
+  export_client(username);
   
   /* Turn off all further filtering, as this IP has already authenticated */
   set_filter(CLIENT_IN, (filter_fn)write_server, 0);
