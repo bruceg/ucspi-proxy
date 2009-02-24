@@ -26,13 +26,6 @@ static str tmpstr;
 #define AT '@'
 #define NUL '\0'
 
-static const char* skipspace(const char* ptr)
-{
-  while (isspace(*ptr))
-    ++ptr;
-  return ptr;
-}
-
 static void fixup_username(const char* msgprefix)
 {
   if (local_name && str_findfirst(&username, AT) < 0) {
@@ -44,11 +37,8 @@ static void fixup_username(const char* msgprefix)
 
 static void handle_user(void)
 {
-  const char* ptr;
-
   saw_command = 0;
-  ptr = skipspace(linebuf.s + 5);
-  str_copyb(&username, ptr, linebuf.s + linebuf.len - ptr);
+  str_copyb(&username, linebuf.s + 5, linebuf.len - 6);
   str_rstrip(&username);
   fixup_username("USER ");
   str_copys(&linebuf, "USER ");
@@ -96,23 +86,16 @@ static void handle_auth_plain_response(ssize_t offset)
 
 static void handle_auth(void)
 {
-  const char* ptr;
-
   saw_command = 1;
-  ptr = skipspace(linebuf.s + 5);
-  if (strncasecmp(ptr, "LOGIN", 5) == 0) {
-    if (ptr[5] == ' ') {
-      ptr = skipspace(ptr + 5);
-      handle_auth_login_response(ptr - linebuf.s);
-    }
+  if (str_case_starts(&linebuf, "AUTH LOGIN")) {
+    if (linebuf.s[10] == ' ')
+      handle_auth_login_response(11);
     else
       saw_auth_login = 1;
   }
-  else if (strncasecmp(ptr, "PLAIN", 5) == 0) {
-    if (ptr[5] == ' ') {
-      ptr = skipspace(ptr + 5);
-      handle_auth_plain_response(ptr - linebuf.s);
-    }
+  else if (str_case_starts(&linebuf, "AUTH PLAIN")) {
+    if (linebuf.s[10] == ' ')
+      handle_auth_plain_response(11);
     else
       saw_auth_plain = 1;
   }
