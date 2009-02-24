@@ -11,7 +11,7 @@
 const char filter_connfail_prefix[] = "* NO ";
 const char filter_connfail_suffix[] = "\r\n";
 
-extern char* base64decode(char* data, unsigned long size);
+extern int base64decode(char* data, unsigned long size, str* dest);
 
 extern const char* local_name;
 
@@ -75,9 +75,9 @@ static void filter_client_data(char* data, ssize_t size)
     }
   }
   else if(saw_auth) {
-    ptr = base64decode(data, size);
-    if (ptr) {
-      str_copys(&username, ptr);
+    if (!base64decode(data, size, &username))
+      username.len = 0;
+    else {
       ptr = username.s;
       while (!isspace(*ptr)) ++ptr;
       *ptr = 0;

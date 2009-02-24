@@ -1,6 +1,8 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <sys/types.h>
+#include <msg/msg.h>
+#include <str/str.h>
 
 #define BASE64_INVALID ((unsigned)-1)
 
@@ -19,21 +21,22 @@ unsigned base64int(char ch)
   return BASE64_INVALID;
 }
 
-char* base64decode(const char* data, unsigned long size)
+int base64decode(const char* data, unsigned long size, str* dest)
 {
+  unsigned char bin[3];
   unsigned char* ptr;
-  char* str;
   unsigned d0;
   unsigned d1;
   unsigned d2;
   unsigned d3;
   
-  ptr = str = malloc(size * 3 / 4 + 2);
+  dest->len = 0;
   while (size) {
     if (isspace(data[0])) size = 0;
     if (size < 4) break;
     if ((d0 = base64int(data[0])) == BASE64_INVALID) break;
     if ((d1 = base64int(data[1])) == BASE64_INVALID) break;
+    ptr = bin;
     *ptr++ = (d0 << 2) | (d1 >> 4);
     if (data[2] != '=') {
       if ((d2 = base64int(data[2])) == BASE64_INVALID) break;
@@ -45,14 +48,10 @@ char* base64decode(const char* data, unsigned long size)
     }
     data += 4;
     size -= 4;
+    if (!str_catb(dest, (char*)bin, ptr - bin))
+      die_oom(111);
   }
-  if (size) {
-    free(str);
-    str = 0;
-  }
-  else
-    *ptr = 0;
-  return str;
+  return size ? 0 : 1;
 }
 
 #ifdef MAIN

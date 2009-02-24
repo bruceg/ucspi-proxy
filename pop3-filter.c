@@ -11,7 +11,7 @@
 const char filter_connfail_prefix[] = "-ERR ";
 const char filter_connfail_suffix[] = "\r\n";
 
-extern char* base64decode(char* data, unsigned long size);
+extern int base64decode(char* data, unsigned long size, str* dest);
 
 extern const char* local_name;
 
@@ -53,8 +53,8 @@ static void filter_client_data(char* data, ssize_t size)
     }
   }
   else if (saw_auth) {
-    if ((ptr = base64decode(data, size)) != 0)
-      str_copys(&username, ptr);
+    if (!base64decode(data, size, &username))
+      username.len = 0;
     saw_auth = 0;
   }
   write_server(data, size);
