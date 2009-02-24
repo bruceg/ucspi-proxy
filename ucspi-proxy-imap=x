@@ -1,5 +1,4 @@
 imap-filter.o
-base64.o
 relay-filter.o
 ucspi-proxy.a
 -lbg

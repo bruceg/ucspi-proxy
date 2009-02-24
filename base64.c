@@ -6,6 +6,8 @@
 #include <msg/msg.h>
 #include <str/str.h>
 
+#include "ucspi-proxy.h"
+
 #define BASE64_INVALID ((unsigned)-1)
 
 int base64decode(const char* data, unsigned long size, str* dest)

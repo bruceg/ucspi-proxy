@@ -11,8 +11,6 @@
 const char filter_connfail_prefix[] = "-ERR ";
 const char filter_connfail_suffix[] = "\r\n";
 
-extern int base64decode(char* data, unsigned long size, str* dest);
-
 extern const char* local_name;
 
 static bool saw_command = 0;

@@ -8,6 +8,8 @@
 #define CLIENT_OUT 1
 extern int SERVER_FD;
 
+struct str;
+
 typedef int bool;
 #define true ((bool)(0==0))
 #define false ((bool)0)
@@ -22,6 +24,9 @@ extern const char filter_connfail_prefix[];
 extern const char filter_connfail_suffix[];
 extern void filter_init(int argc, char** argv);
 extern void filter_deinit(void);
+
+/* Functions from base64.c */
+extern int base64decode(const char* data, unsigned long size, struct str* dest);
 
 /* Functions from ucspi-proxy.c */
 extern void usage(const char*);
