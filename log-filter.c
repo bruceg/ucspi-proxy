@@ -38,6 +38,7 @@ void filter_init(int argc, char** argv)
     usage("Too many arguments.");
   set_filter(CLIENT_IN, filter_client_data, 0);
   set_filter(SERVER_FD, filter_server_data, 0);
+  (void)argv;
 }
 
 void filter_deinit(void)

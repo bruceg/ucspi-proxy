@@ -15,6 +15,7 @@ void filter_init(int argc, char** argv)
     usage("Too many arguments.");
   set_filter(CLIENT_IN, (filter_fn)write_server, 0);
   set_filter(SERVER_FD, (filter_fn)write_client, 0);
+  (void)argv;
 }
 
 void filter_deinit(void)
