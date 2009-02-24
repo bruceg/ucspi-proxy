@@ -20,42 +20,50 @@ static str linebuf;
 
 #define CR '\r'
 #define LF '\n'
+#define CRLF "\r\n"
+#define AT '@'
 
-static void filter_client_data(char* data, ssize_t size)
+static void filter_client_line(void)
 {
   const char* ptr;
-  const char* cr;
-  if (!strncasecmp(data, "PASS ", 5))
-    saw_command = 1;
-  else if (!strncasecmp(data, "AUTH ", 5))
-    saw_auth = saw_command = 1;
-  else if (!strncasecmp(data, "USER ", 5)) {
-    saw_command = 0;
-    if ((cr = memchr(data, CR, size)) == 0)
-      cr = memchr(data, LF, size);
-    if (cr != 0) {
-      ptr = data + 5;
-      while (isspace(*ptr)) ++ptr;
-      str_copyb(&username, ptr, cr-ptr);
-      if (local_name && memchr(data, '@', size) == 0) {
-	str_copyb(&linebuf, data, cr-data);
-	str_catc(&linebuf, '@');
-	str_catc(&username, '@');
-	str_cats(&linebuf, local_name);
-	str_cats(&username, local_name);
-	str_catb(&linebuf, cr, size-(cr-data));
-	data = linebuf.s;
-	size = linebuf.len;
-      }
-      msg2("USER ", username.s);
-    }
-  }
-  else if (saw_auth) {
-    if (!base64decode(data, size, &username))
+  if (saw_auth) {
+    if (!base64decode(linebuf.s, linebuf.len, &username))
       username.len = 0;
     saw_auth = 0;
   }
-  write_server(data, size);
+  else if (str_case_starts(&linebuf, "PASS "))
+    saw_command = 1;
+  else if (str_case_starts(&linebuf, "AUTH "))
+    saw_auth = saw_command = 1;
+  else if (str_case_starts(&linebuf, "USER ")) {
+    saw_command = 0;
+    ptr = linebuf.s + 5;
+    while (isspace(*ptr)) ++ptr;
+    str_copyb(&username, ptr, linebuf.s + linebuf.len - ptr);
+    str_rstrip(&username);
+    if (local_name && str_findfirst(&username, AT) < 0) {
+      str_catc(&username, AT);
+      str_cats(&username, local_name);
+    }
+    msg2("USER ", username.s);
+    str_copys(&linebuf, "USER ");
+    str_cat(&linebuf, &username);
+    str_catb(&linebuf, CRLF, 2);
+  }
+}
+
+static void filter_client_data(char* data, ssize_t size)
+{
+  char* lf;
+  while ((lf = memchr(data, LF, size)) != 0) {
+    str_catb(&linebuf, data, lf - data + 1);
+    filter_client_line();
+    write_server(linebuf.s, linebuf.len);
+    linebuf.len = 0;
+    size -= lf - data + 1;
+    data = lf + 1;
+  }
+  str_catb(&linebuf, data, size);
 }
 
 static void filter_server_data(char* data, ssize_t size)
