@@ -14,42 +14,110 @@ const char filter_connfail_suffix[] = "\r\n";
 extern const char* local_name;
 
 static bool saw_command = 0;
-static bool saw_auth = 0;
+static bool saw_auth_login = 0;
+static bool saw_auth_plain = 0;
 static str username;
 static str linebuf;
+static str tmpstr;
 
 #define CR '\r'
 #define LF '\n'
 #define CRLF "\r\n"
 #define AT '@'
+#define NUL '\0'
+
+static const char* skipspace(const char* ptr)
+{
+  while (isspace(*ptr))
+    ++ptr;
+  return ptr;
+}
+
+static void fixup_username(const char* msgprefix)
+{
+  if (local_name && str_findfirst(&username, AT) < 0) {
+    str_catc(&username, AT);
+    str_cats(&username, local_name);
+  }
+  msg2(msgprefix, username.s);
+}
+
+static void handle_user(void)
+{
+  const char* ptr;
+
+  saw_command = 0;
+  ptr = skipspace(linebuf.s + 5);
+  str_copyb(&username, ptr, linebuf.s + linebuf.len - ptr);
+  str_rstrip(&username);
+  fixup_username("USER ");
+  str_copys(&linebuf, "USER ");
+  str_cat(&linebuf, &username);
+  str_catb(&linebuf, CRLF, 2);
+}
+
+static void handle_pass(void)
+{
+  saw_command = 1;
+}
+
+static void handle_auth(void)
+{
+  const char* ptr;
+
+  saw_command = 1;
+  ptr = skipspace(linebuf.s + 5);
+  if (strncasecmp(ptr, "LOGIN", 5) == 0)
+    saw_auth_login = 1;
+  else if (strncasecmp(ptr, "PLAIN", 5) == 0)
+    saw_auth_plain = 1;
+}
+
+static void handle_auth_login_response(void)
+{
+  saw_auth_login = 0;
+  if (!base64decode(linebuf.s, linebuf.len, &username))
+    username.len = 0;
+  else {
+    fixup_username("AUTH LOGIN ");
+    linebuf.len = 0;
+    base64encode(username.s, username.len, &linebuf);
+    str_catb(&linebuf, CRLF, 2);
+  }
+}
+
+static void handle_auth_plain_response(void)
+{
+  int start;
+  int end;
+
+  saw_auth_plain = 0;
+  if (base64decode(linebuf.s, linebuf.len, &tmpstr)) {
+    /* tmpstr should now contain "AUTHORIZATION\0AUTHENTICATION\0PASSWORD" */
+    if ((start = str_findfirst(&tmpstr, NUL)) >= 0
+	&& (end = str_findnext(&tmpstr, NUL, ++start)) > start) {
+      str_copyb(&username, tmpstr.s + start, end - start);
+      fixup_username("AUTH PLAIN ");
+      str_splice(&tmpstr, start, end - start, &username);
+      linebuf.len = 0;
+      base64encode(tmpstr.s, tmpstr.len, &linebuf);
+      str_catb(&linebuf, CRLF, 2);
+    }
+  }
+}
 
 static void filter_client_line(void)
 {
-  const char* ptr;
-  if (saw_auth) {
-    if (!base64decode(linebuf.s, linebuf.len, &username))
-      username.len = 0;
-    saw_auth = 0;
-  }
+  if (saw_auth_login)
+    handle_auth_login_response();
+  else if (saw_auth_plain)
+    handle_auth_plain_response();
   else if (str_case_starts(&linebuf, "PASS "))
-    saw_command = 1;
+    handle_pass();
   else if (str_case_starts(&linebuf, "AUTH "))
-    saw_auth = saw_command = 1;
-  else if (str_case_starts(&linebuf, "USER ")) {
-    saw_command = 0;
-    ptr = linebuf.s + 5;
-    while (isspace(*ptr)) ++ptr;
-    str_copyb(&username, ptr, linebuf.s + linebuf.len - ptr);
-    str_rstrip(&username);
-    if (local_name && str_findfirst(&username, AT) < 0) {
-      str_catc(&username, AT);
-      str_cats(&username, local_name);
-    }
-    msg2("USER ", username.s);
-    str_copys(&linebuf, "USER ");
-    str_cat(&linebuf, &username);
-    str_catb(&linebuf, CRLF, 2);
-  }
+    handle_auth();
+  else if (str_case_starts(&linebuf, "USER "))
+    handle_user();
 }
 
 static void filter_client_data(char* data, ssize_t size)

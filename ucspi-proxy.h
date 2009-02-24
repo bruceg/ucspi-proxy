@@ -27,6 +27,7 @@ extern void filter_deinit(void);
 
 /* Functions from base64.c */
 extern int base64decode(const char* data, unsigned long size, struct str* dest);
+extern int base64encode(const char* data, unsigned long size, struct str* dest);
 
 /* Functions from ucspi-proxy.c */
 extern void usage(const char*);

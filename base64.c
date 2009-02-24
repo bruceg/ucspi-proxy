@@ -28,6 +28,11 @@ int base64decode(const char* data, unsigned long size, str* dest)
   return size ? 0 : 1;
 }
 
+int base64encode(const char* data, unsigned long size, str* dest)
+{
+  return base64_encode_line((const unsigned char*)data, size, dest);
+}
+
 #ifdef MAIN
 #include <stdio.h>
 #include <string.h>
