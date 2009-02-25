@@ -8,10 +8,7 @@
 
 // FIXME: make sure this is the right error number
 const char filter_connfail_prefix[] = "503 ";
-const char filter_connfail_suffix[] = "\r\n";
-
-#define CR ((char)13)
-#define LF ((char)10)
+const char filter_connfail_suffix[] = CRLF;
 
 struct replacement
 {

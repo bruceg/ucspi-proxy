@@ -3,6 +3,14 @@
 
 #include <sys/types.h>
 
+#ifndef CRLF
+#define CR '\r'
+#define LF '\n'
+#define CRLF "\r\n"
+#endif
+#define AT '@'
+#define NUL '\0'
+
 #define BUFSIZE 4096
 #define CLIENT_IN 0
 #define CLIENT_OUT 1

@@ -20,12 +20,6 @@ static str username;
 static str linebuf;
 static str tmpstr;
 
-#define CR '\r'
-#define LF '\n'
-#define CRLF "\r\n"
-#define AT '@'
-#define NUL '\0'
-
 static void fixup_username(const char* msgprefix)
 {
   if (local_name && str_findfirst(&username, AT) < 0) {
