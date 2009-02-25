@@ -36,10 +36,18 @@ static const char* skipspace(const char* ptr)
   return ptr;
 }
 
+static int iseol(char ch)
+{
+  return ch == CR || ch == LF;
+}
+
 static void handle_user(void)
 {
+  const char* ptr;
+
   saw_command = 0;
-  str_copyb(&username, linebuf.s + 5, linebuf.len - 6);
+  ptr = skipspace(linebuf.s + 5);
+  str_copyb(&username, ptr, linebuf.s + linebuf.len - ptr);
   str_rstrip(&username);
   fixup_username("USER ");
   str_copys(&linebuf, "USER ");
@@ -91,18 +99,18 @@ static void handle_auth(void)
 
   ptr = skipspace(linebuf.s + 5);
   /* No parameter, so just pass it through. */
-  if (*ptr == CR || *ptr == LF)
+  if (iseol(*ptr))
     return;
   saw_command = 1;
-  if (str_case_starts(&linebuf, "AUTH LOGIN")) {
-    if (linebuf.s[10] == ' ')
-      handle_auth_login_response(11);
+  if (strncasecmp(ptr, "LOGIN", 5) == 0) {
+    if (ptr[5] == ' ' && !iseol(*(ptr = skipspace(ptr + 5))))
+      handle_auth_login_response(ptr - linebuf.s);
     else
       saw_auth_login = 1;
   }
-  else if (str_case_starts(&linebuf, "AUTH PLAIN")) {
-    if (linebuf.s[10] == ' ')
-      handle_auth_plain_response(11);
+  else if (strncasecmp(ptr, "PLAIN", 5) == 0) {
+    if (ptr[5] == ' ' && !iseol(*(ptr = skipspace(ptr + 5))))
+      handle_auth_plain_response(ptr - linebuf.s);
     else
       saw_auth_plain = 1;
   }
