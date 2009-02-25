@@ -29,6 +29,13 @@ static void fixup_username(const char* msgprefix)
   msg2(msgprefix, username.s);
 }
 
+static const char* skipspace(const char* ptr)
+{
+  while (*ptr == ' ')
+    ++ptr;
+  return ptr;
+}
+
 static void handle_user(void)
 {
   saw_command = 0;
@@ -80,6 +87,12 @@ static void handle_auth_plain_response(ssize_t offset)
 
 static void handle_auth(void)
 {
+  const char* ptr;
+
+  ptr = skipspace(linebuf.s + 5);
+  /* No parameter, so just pass it through. */
+  if (*ptr == CR || *ptr == LF)
+    return;
   saw_command = 1;
   if (str_case_starts(&linebuf, "AUTH LOGIN")) {
     if (linebuf.s[10] == ' ')
