@@ -1,4 +1,3 @@
-#include <ctype.h>
 #include <stdlib.h>
 #include <sys/types.h>
 
@@ -8,8 +7,6 @@
 
 #include "ucspi-proxy.h"
 
-#define BASE64_INVALID ((unsigned)-1)
-
 int base64decode(const char* data, unsigned long size, str* dest)
 {
   unsigned char bin[3];
@@ -17,7 +14,7 @@ int base64decode(const char* data, unsigned long size, str* dest)
   
   dest->len = 0;
   while (size) {
-    if (isspace(data[0])) size = 0;
+    if (data[0] == CR || data[0] == LF) size = 0;
     if (size < 4) break;
     if ((decoded = base64_decode_part(data, bin)) <= 0) break;
     data += 4;
