@@ -19,22 +19,30 @@ static str saved_label;
 static str username;
 static str linebuf;
 
-static char* parse_label(char* data, ssize_t size)
+static int parse_label(void)
 {
-  char* end;
-  if ((end = memchr(data, ' ', size)) == 0) return 0;
-  str_copyb(&label, data, end - data);
-  return end+1;
+  int end;
+  if ((end = str_findfirst(&linebuf, ' ')) <= 0) return 0;
+  str_copyb(&label, linebuf.s, end);
+  return end + 1;
 }
 
-static void filter_client_data(char* data, ssize_t size)
+static void fix_username(void)
+{
+  if (local_name && str_findfirst(&username, '@') < 0) {
+    str_catc(&username, '@');
+    str_cats(&username, local_name);
+  }
+}
+
+static void filter_client_line(void)
 {
   char* cmd;
-  char* ptr;
   char* start;
+  char* end;
 
-  cmd = parse_label(data, size);
-  if(cmd) {
+  cmd = linebuf.s + parse_label();
+  if (cmd > linebuf.s) {
     /* If we see a "AUTH" or "LOGIN" command, save the preceding label
      * for reference when looking for the corresponding "OK" */
     if(!strncasecmp(cmd, "AUTHENTICATE ", 5)) {
@@ -43,46 +51,52 @@ static void filter_client_data(char* data, ssize_t size)
       saw_auth = 1;
     }
     else if(!strncasecmp(cmd, "LOGIN ", 6)) {
-      ptr = cmd + 6;
-      while (isspace(*ptr))
-	++ptr;
-      start = ptr++;
+      start = cmd + 6;
+      while (isspace(*start))
+	++start;
       if (*start == '"') {
-	while (*ptr != '"')
-	  ++ptr;
-	str_copyb(&username, start+1, ptr-(start+1));
+	end = ++start;
+	while (*end != '"')
+	  ++end;
       }
       else {
-	while (!isspace(*ptr))
-	  ++ptr;
-	str_copyb(&username, start, ptr-start);
+	end = start;
+	while (!isspace(*end))
+	  ++end;
       }
-      if (local_name && memchr(start, '@', ptr-start) == 0) {
-	str_copyb(&linebuf, data, ptr-data);
-	str_catc(&linebuf, '@');
-	str_catc(&username, '@');
-	str_cats(&linebuf, local_name);
-	str_cats(&username, local_name);
-	str_catb(&linebuf, ptr, size-(ptr-data));
-	data = linebuf.s;
-	size = linebuf.len;
-      }
+      str_copyb(&username, start, end-start);
+      fix_username();
+      str_splice(&linebuf, start-linebuf.s, end-start, &username);
       str_copy(&saved_label, &label);
       str_truncate(&label, 0);
-      msg2("USER ", username.s);
+      msg2("LOGIN ", username.s);
     }
   }
   else if(saw_auth) {
-    if (!base64decode(data, size, &username))
+    if (!base64decode(linebuf.s, linebuf.len, &username))
       username.len = 0;
     else {
-      ptr = username.s;
-      while (!isspace(*ptr)) ++ptr;
-      *ptr = 0;
+      end = username.s;
+      while (!isspace(*end))
+	++end;
+      *end = 0;
     }
     saw_auth = 0;
   }
-  write_server(data, size);
+}
+
+static void filter_client_data(char* data, ssize_t size)
+{
+  char* lf;
+  while ((lf = memchr(data, LF, size)) != 0) {
+    str_catb(&linebuf, data, lf - data + 1);
+    filter_client_line();
+    write_server(linebuf.s, linebuf.len);
+    linebuf.len = 0;
+    size -= lf - data + 1;
+    data = lf + 1;
+  }
+  str_catb(&linebuf, data, size);
 }
 
 static void filter_server_data(char* data, ssize_t size)
@@ -91,11 +105,12 @@ static void filter_server_data(char* data, ssize_t size)
     /* Skip continuation data */
     if(data[0] != '+') {
       /* Check if the response is tagged with the saved label */
-      const char* resp = parse_label(data, size);
-      if(resp) {
+      str_copyb(&linebuf, data, size);
+      int resp = parse_label();
+      if(resp > 0) {
 	if(!str_diff(&label, &saved_label)) {
 	  /* Check if the response was an OK */
-	  if(!strncasecmp(resp, "OK ", 3))
+	  if(!strncasecmp(linebuf.s + resp, "OK ", 3))
 	    accept_client(username.s);
 	  else
 	    deny_client(username.s);
