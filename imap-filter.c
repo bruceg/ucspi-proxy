@@ -35,55 +35,69 @@ static void fix_username(void)
   }
 }
 
+static void handle_login(int offset)
+{
+  const char* start;
+  const char* end;
+
+  start = linebuf.s + offset;
+  while (isspace(*start))
+    ++start;
+  if (*start == '"') {
+    end = ++start;
+    while (*end != '"')
+      ++end;
+  }
+  else {
+    end = start;
+    while (!isspace(*end))
+      ++end;
+  }
+  str_copyb(&username, start, end-start);
+  fix_username();
+  str_splice(&linebuf, start-linebuf.s, end-start, &username);
+  str_copy(&saved_label, &label);
+  str_truncate(&label, 0);
+  msg2("LOGIN ", username.s);
+}
+
+static void handle_authenticate(int offset)
+{
+  str_copy(&saved_label, &label);
+  str_truncate(&label, 0);
+  saw_auth = 1;
+  (void)offset;
+}
+
+static void handle_auth_response(void)
+{
+  char* ptr;
+  if (!base64decode(linebuf.s, linebuf.len, &username))
+    username.len = 0;
+  else {
+    ptr = username.s;
+    while (!isspace(*ptr))
+      ++ptr;
+    *ptr = 0;
+  }
+  saw_auth = 0;
+}
+
 static void filter_client_line(void)
 {
   int offset;
   const char* cmd;
-  const char* start;
-  const char* end;
-  char* ptr;
 
-  if (saw_auth) {
-    if (!base64decode(linebuf.s, linebuf.len, &username))
-      username.len = 0;
-    else {
-      ptr = username.s;
-      while (!isspace(*ptr))
-	++ptr;
-      *ptr = 0;
-    }
-    saw_auth = 0;
-  }
+  if (saw_auth)
+    handle_auth_response();
   else if ((offset = parse_label()) > 0) {
     cmd = linebuf.s + offset;
     /* If we see a "AUTHENTICATE" or "LOGIN" command, save the preceding
      * label for reference when looking for the corresponding "OK" */
-    if(!strncasecmp(cmd, "AUTHENTICATE ", 5)) {
-      str_copy(&saved_label, &label);
-      str_truncate(&label, 0);
-      saw_auth = 1;
-    }
-    else if (!strncasecmp(cmd, "LOGIN ", 6)) {
-      start = cmd + 6;
-      while (isspace(*start))
-	++start;
-      if (*start == '"') {
-	end = ++start;
-	while (*end != '"')
-	  ++end;
-      }
-      else {
-	end = start;
-	while (!isspace(*end))
-	  ++end;
-      }
-      str_copyb(&username, start, end-start);
-      fix_username();
-      str_splice(&linebuf, start-linebuf.s, end-start, &username);
-      str_copy(&saved_label, &label);
-      str_truncate(&label, 0);
-      msg2("LOGIN ", username.s);
-    }
+    if(!strncasecmp(cmd, "AUTHENTICATE ", 5))
+      handle_authenticate(offset);
+    else if (!strncasecmp(cmd, "LOGIN ", 6))
+      handle_login(offset);
   }
 }
 
