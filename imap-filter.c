@@ -37,20 +37,33 @@ static void fix_username(void)
 
 static void filter_client_line(void)
 {
-  char* cmd;
-  char* start;
-  char* end;
+  int offset;
+  const char* cmd;
+  const char* start;
+  const char* end;
+  char* ptr;
 
-  cmd = linebuf.s + parse_label();
-  if (cmd > linebuf.s) {
-    /* If we see a "AUTH" or "LOGIN" command, save the preceding label
-     * for reference when looking for the corresponding "OK" */
+  if (saw_auth) {
+    if (!base64decode(linebuf.s, linebuf.len, &username))
+      username.len = 0;
+    else {
+      ptr = username.s;
+      while (!isspace(*ptr))
+	++ptr;
+      *ptr = 0;
+    }
+    saw_auth = 0;
+  }
+  else if ((offset = parse_label()) > 0) {
+    cmd = linebuf.s + offset;
+    /* If we see a "AUTHENTICATE" or "LOGIN" command, save the preceding
+     * label for reference when looking for the corresponding "OK" */
     if(!strncasecmp(cmd, "AUTHENTICATE ", 5)) {
       str_copy(&saved_label, &label);
       str_truncate(&label, 0);
       saw_auth = 1;
     }
-    else if(!strncasecmp(cmd, "LOGIN ", 6)) {
+    else if (!strncasecmp(cmd, "LOGIN ", 6)) {
       start = cmd + 6;
       while (isspace(*start))
 	++start;
@@ -71,17 +84,6 @@ static void filter_client_line(void)
       str_truncate(&label, 0);
       msg2("LOGIN ", username.s);
     }
-  }
-  else if(saw_auth) {
-    if (!base64decode(linebuf.s, linebuf.len, &username))
-      username.len = 0;
-    else {
-      end = username.s;
-      while (!isspace(*end))
-	++end;
-      *end = 0;
-    }
-    saw_auth = 0;
   }
 }
 
