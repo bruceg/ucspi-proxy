@@ -1,4 +1,5 @@
 imap-filter.o
 relay-filter.o
+auth-lib.o
 ucspi-proxy.a
 -lbg
