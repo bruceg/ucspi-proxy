@@ -1,8 +1,8 @@
 -------------------------------------------------------------------------------
 Changes in version 0.98
 
-- Added support for rewriting usernames in POP3 AUTH LOGIN and PLAIN
-  commands and subsequent responses.
+- Added support for rewriting usernames in POP3 and IMAP AUTH LOGIN and
+  PLAIN commands and subsequent responses.
 
 Development of this version has been sponsored by FutureQuest, Inc.
 ossi@FutureQuest.net  http://www.FutureQuest.net/
