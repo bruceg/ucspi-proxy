@@ -89,9 +89,10 @@ static void filter_server_data(char* data, ssize_t size)
   if(saved_label.len > 0) {
     /* Skip continuation data */
     if(data[0] != '+') {
+      int resp;
       /* Check if the response is tagged with the saved label */
       str_copyb(&linebuf, data, size);
-      int resp = parse_label();
+      resp = parse_label();
       if(resp > 0) {
 	if(!str_diff(&label, &saved_label)) {
 	  /* Check if the response was an OK */
