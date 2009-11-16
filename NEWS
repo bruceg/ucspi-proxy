@@ -4,6 +4,9 @@ Changes in version 0.98
 - Added support for rewriting usernames in POP3 and IMAP AUTH LOGIN and
   PLAIN commands and subsequent responses.
 
+- Modified the core library to work either with a UCSPI client or with
+  the internal TCP connection support.
+
 Development of this version has been sponsored by FutureQuest, Inc.
 ossi@FutureQuest.net  http://www.FutureQuest.net/
 -------------------------------------------------------------------------------

@@ -193,7 +193,7 @@ void usage(const char* message)
   if(message)
     msg1(message);
   obuf_put4s(&errbuf, "usage: ", program,
-	     " [-v] [-t timeout] host port ", filter_usage);
+	     " [-v] [-t timeout] [host port] ", filter_usage);
   obuf_endl(&errbuf);
   exit(1);
 }
@@ -231,11 +231,16 @@ static void parse_args(int argc, char* argv[])
       break;
     }
   }
-  if (argc - optind < 2)
-    usage("Missing host and port");
-  if ((SERVER_FD = tcp_connect(argv[optind], argv[optind+1],
-			       opt_timeout)) == -1)
-    connfail();
+  if (argc - optind == 0)
+    SERVER_FD = 6;
+  else if (argc - optind == 2) {
+    if ((SERVER_FD = tcp_connect(argv[optind], argv[optind+1],
+				 opt_timeout)) == -1)
+      connfail();
+  }
+  else
+    usage("Incorrect usage");
+
   optind += 2;
   filter_init(argc-optind, argv+optind);
 }
