@@ -3,17 +3,43 @@
 ucspi-proxy \- Copy data between a UCSPI client and server
 .SH SYNOPSIS
 .B ucspi-proxy
-[\-v]
+[
+.I \-v
+] [
+.I \-t TIMEOUT
+] [
+.I HOST PORT
+]
 .SH DESCRIPTION
 This program is a simple loop copying data from a UCSPI server (file
-descriptor 0) to a client (FD 7), and from a client (FD 6) to a server
-(FD 1).
-If either socket closes,
+descriptor 0) to a client, and from a client to a server (FD 1).  If
+either socket closes,
 .B ucspi-proxy
-exits.
+exits.  The other
+.B ucspi-proxy-*
+programs are based on this simple loop and have similar usage.
+
+If
+.I HOST
+and
+.I PORT
+are given on the command line,
+.B ucspi-proxy
+will make a TCP connection with the given parameters.  If neither are
+present,
+.B ucspi-proxy
+will use file descriptor 6 for the client socket, as provided by UCSPI
+client programs.
 .SH OPTIONS
 .TP
-.I -v
+.I \-t TIMEOUT
+When making an connection,
+.B ucspi-proxy
+will wait a maximum of
+.I TIMEOUT
+seconds before giving up.  Defaults to 30.
+.TP
+.I \-v
 Print messages about errors and byte counts.  Without this option,
 .B ucspi-proxy
 is silent.
