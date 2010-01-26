@@ -1,6 +1,9 @@
 -------------------------------------------------------------------------------
 Changes in version 0.99
 
+- Fixed core bug in command-line argument handling which prevented use
+  of relay-ctrl.
+
 Development of this version has been sponsored by FutureQuest, Inc.
 ossi@FutureQuest.net  http://www.FutureQuest.net/
 -------------------------------------------------------------------------------

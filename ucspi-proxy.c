@@ -233,7 +233,7 @@ static void parse_args(int argc, char* argv[])
   }
   if (argc - optind == 0)
     SERVER_FD = 6;
-  else if (argc - optind == 2) {
+  else if (argc - optind >= 2) {
     if ((SERVER_FD = tcp_connect(argv[optind], argv[optind+1],
 				 opt_timeout)) == -1)
       connfail();
