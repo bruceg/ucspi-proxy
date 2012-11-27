@@ -4,6 +4,8 @@ Changes in version 0.99
 - Fixed core bug in command-line argument handling which prevented use
   of relay-ctrl.
 
+- Fixed exporting client environment variables when not in verbose mode.
+
 Development of this version has been sponsored by FutureQuest, Inc.
 ossi@FutureQuest.net  http://www.FutureQuest.net/
 -------------------------------------------------------------------------------

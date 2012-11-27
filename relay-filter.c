@@ -93,13 +93,13 @@ static void export_client(const char* username)
 void accept_client(const char* username)
 {
   if (opt_verbose) {
-    if (username) {
+    if (username)
       msg5("Accepted relay client ", client_ip, ", username '", username, "'");
-      export_client(username);
-    }
     else
       msg3("Accepted relay client ", client_ip, ", username unknown");
   }
+  if (username)
+    export_client(username);
   
   /* Turn off all further filtering, as this IP has already authenticated */
   set_filter(CLIENT_IN, (filter_fn)write_server, 0);
