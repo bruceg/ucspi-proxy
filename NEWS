@@ -1,6 +1,8 @@
 -------------------------------------------------------------------------------
 Changes in version 0.99
 
+- Added logging of final response to authentication commands.
+
 - Fixed core bug in command-line argument handling which prevented use
   of relay-ctrl.
 

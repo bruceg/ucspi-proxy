@@ -95,6 +95,7 @@ static void filter_server_data(char* data, ssize_t size)
       resp = parse_label();
       if(resp > 0) {
 	if(!str_diff(&label, &saved_label)) {
+	  log_line(data, size);
 	  /* Check if the response was an OK */
 	  if(!strncasecmp(linebuf.s + resp, "OK ", 3))
 	    accept_client(username.s);

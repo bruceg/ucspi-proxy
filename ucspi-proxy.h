@@ -12,6 +12,7 @@
 #define NUL '\0'
 
 #define BUFSIZE 4096
+#define MAXLINE 64
 #define CLIENT_IN 0
 #define CLIENT_OUT 1
 extern int SERVER_FD;
@@ -45,6 +46,7 @@ extern void write_client(const char*, ssize_t);
 extern void write_server(const char*, ssize_t);
 extern bool set_filter(int fd, filter_fn filter, eof_fn at_eof);
 extern bool del_filter(int fd);
+extern void log_line(const char* data, ssize_t size);
 
 /* Functions from tcp-connect.c */
 extern int tcp_connect(const char*, const char*, unsigned);

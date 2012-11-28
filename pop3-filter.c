@@ -68,6 +68,7 @@ static void filter_client_data(char* data, ssize_t size)
 static void filter_server_data(char* data, ssize_t size)
 {
   if (saw_command) {
+    log_line(data, size);
     if (!strncasecmp(data, "+OK ", 4)) {
       accept_client(username.s);
       saw_command = 0;

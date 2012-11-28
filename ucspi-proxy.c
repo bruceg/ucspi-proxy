@@ -161,6 +161,26 @@ void write_server(const char* data, ssize_t size)
   retry_write(data, size, SERVER_FD, "server", &bytes_server_out);
 }
 
+void log_line(const char* data, ssize_t size)
+{
+  ssize_t i;
+  int dots = 0;
+  for (i = 0; i < size; i++) {
+    if (data[i] == '\r' || data[i] == '\n')
+      break;
+    if (i >= MAXLINE) {
+      dots = 1;
+      break;
+    }
+  }
+  char buf[i+1];
+  memcpy(buf, data, i);
+  if (dots)
+    buf[i-1] = buf[i-2] = buf[i-3] = '.';
+  buf[i] = 0;
+  msg1(buf);
+}
+
 static void exitfn(void)
 {
   char line[42+FMT_ULONG_LEN*4];
