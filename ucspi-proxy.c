@@ -156,19 +156,9 @@ void write_client(const char* data, ssize_t size)
   retry_write(data, size, CLIENT_OUT, "client", &bytes_client_out);
 }
 
-void writes_client(const char* data)
-{
-  write_client(data, strlen(data));
-}
-
 void write_server(const char* data, ssize_t size)
 {
   retry_write(data, size, SERVER_FD, "server", &bytes_server_out);
-}
-
-void writes_server(const char* data)
-{
-  write_server(data, strlen(data));
 }
 
 static void exitfn(void)
