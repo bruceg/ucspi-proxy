@@ -16,6 +16,7 @@ str username = {0,0,0};
 static bool saw_auth_login = 0;
 static bool saw_auth_plain = 0;
 static str tmpstr;
+static str msgstr;
 
 void make_username(const char* start, ssize_t len, const char* msgprefix)
 {
@@ -24,7 +25,8 @@ void make_username(const char* start, ssize_t len, const char* msgprefix)
     str_catc(&username, AT);
     str_cats(&username, local_name);
   }
-  msg2(msgprefix, username.s);
+  str_copy2s(&msgstr, msgprefix, username.s);
+  log_line(msgstr.s, msgstr.len);
 }
 
 static const char* skipspace(const char* ptr)

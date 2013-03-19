@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <msg/msg.h>
 #include <str/str.h>
 #include "auth-lib.h"
 #include "ucspi-proxy.h"
