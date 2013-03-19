@@ -32,6 +32,10 @@ will use file descriptor 6 for the client socket, as provided by UCSPI
 client programs.
 .SH OPTIONS
 .TP
+.I \-l MAXLINE
+The maximum length of lines (from either server or client) to copy to
+the log. Defaults to 64.
+.TP
 .I \-t TIMEOUT
 When making an connection,
 .B ucspi-proxy

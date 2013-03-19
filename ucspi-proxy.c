@@ -19,6 +19,7 @@ static unsigned long bytes_client_out = 0;
 static unsigned long bytes_server_in = 0;
 static unsigned long bytes_server_out = 0;
 int opt_verbose = 0;
+int opt_maxline = MAXLINE;
 static unsigned opt_timeout = 30;
 pid_t pid;
 
@@ -168,7 +169,7 @@ void log_line(const char* data, ssize_t size)
   for (i = 0; i < size; i++) {
     if (data[i] == '\r' || data[i] == '\n')
       break;
-    if (i >= MAXLINE) {
+    if (i >= opt_maxline) {
       dots = 1;
       break;
     }
@@ -225,10 +226,16 @@ static void parse_args(int argc, char* argv[])
   int opt;
   unsigned tmp;
   char* end;
-  while((opt = getopt(argc, argv, "vt:")) != EOF) {
+  while((opt = getopt(argc, argv, "vl:t:")) != EOF) {
     switch(opt) {
     case 'v':
       opt_verbose++;
+      break;
+    case 'l':
+      tmp = strtoul(optarg, &end, 10);
+      if (tmp == 0 || *end != 0)
+	usage("Invalid maximum line length");
+      opt_maxline = tmp;
       break;
     case 't':
       tmp = strtoul(optarg, &end, 10);
