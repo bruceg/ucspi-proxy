@@ -14,7 +14,7 @@ A mailing list archive is available at:
 	http://lists.untroubled.org/?list=bgware
 
 Development versions of @PACKAGE@ are available via git at:
-	git://untroubled.org/git/@PACKAGE@.git
+	git://github.com/bruceg/@PACKAGE@.git
 
 Requirements:
 
