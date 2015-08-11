@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <sys/types.h>
 
-#include <base64/base64.h>
-#include <msg/msg.h>
-#include <str/str.h>
+#include <bglibs/base64.h>
+#include <bglibs/msg.h>
+#include <bglibs/str.h>
 
 #include "ucspi-proxy.h"
 

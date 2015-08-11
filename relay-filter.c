@@ -1,12 +1,12 @@
-#include <sysdeps.h>
+#include <bglibs/sysdeps.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <msg/msg.h>
-#include <unix/sig.h>
+#include <bglibs/msg.h>
+#include <bglibs/sig.h>
 #include "ucspi-proxy.h"
 
 static unsigned relay_rerun_delay;

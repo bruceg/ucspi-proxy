@@ -1,4 +1,4 @@
-#include <sysdeps.h>
+#include <bglibs/sysdeps.h>
 #include <errno.h>
 #include <signal.h>
 #include <stdio.h>
@@ -6,10 +6,10 @@
 #include <string.h>
 #include <sys/time.h>
 #include <unistd.h>
-#include <fmt/number.h>
-#include <iobuf/iobuf.h>
-#include <msg/msg.h>
-#include <str/str.h>
+#include <bglibs/fmt.h>
+#include <bglibs/iobuf.h>
+#include <bglibs/msg.h>
+#include <bglibs/str.h>
 #include "ucspi-proxy.h"
 
 const int msg_show_pid = 1;

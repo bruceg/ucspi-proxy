@@ -2,10 +2,10 @@
 #include <netdb.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <msg/msg.h>
-#include <net/resolve.h>
-#include <net/socket.h>
-#include <unix/nonblock.h>
+#include <bglibs/msg.h>
+#include <bglibs/resolve.h>
+#include <bglibs/socket.h>
+#include <bglibs/unix.h>
 #include "ucspi-proxy.h"
 
 static ipv4addr addr;

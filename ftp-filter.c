@@ -6,7 +6,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <msg/msg.h>
+#include <bglibs/msg.h>
 #include <misc/utoa.h>
 #include "ucspi-proxy.h"
 
