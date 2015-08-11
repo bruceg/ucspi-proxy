@@ -32,9 +32,6 @@ Replace "UCSPIserver" with the program that will accept connections, and
 "UCSPIclient" with the program that will make connections.  See the
 "tcp-proxy" script for a TCP-TCP proxy example.
 
-To make the POP3 and IMAP relay proxies work, you may need to edit the
-constants at the top of the relay-filter.c file.
-
 This program is Copyright(C) @YEAR@ Bruce Guenter, and may be copied
 according to the GNU GENERAL PUBLIC LICENSE (GPL) Version 2 or a later
 version.  A copy of this license is included with this package.  This
