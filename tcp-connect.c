@@ -8,15 +8,15 @@
 #include <bglibs/unix.h>
 #include "ucspi-proxy.h"
 
-static ipv4addr addr;
-static long port;
-
 int tcp_connect(const char* host, const char* portstr, unsigned timeout)
 {
   struct servent* se;
   const char* end;
   int fd;
   iopoll_fd pf;
+  ipv4addr addr;
+  long port;
+
 
   if (!resolve_ipv4name(host, &addr))
     die3(111, "Could not resolve '", host, "'");
