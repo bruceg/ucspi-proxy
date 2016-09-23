@@ -221,6 +221,12 @@ static void connfail(void)
   exit(0);
 }
 
+void connect_server(const char* hostname, const char* port)
+{
+  if ((SERVER_FD = tcp_connect(hostname, port, opt_timeout)) == -1)
+    connfail();
+}
+
 static void parse_args(int argc, char* argv[])
 {
   int opt;
@@ -250,11 +256,8 @@ static void parse_args(int argc, char* argv[])
   }
   if (argc - optind == 0)
     SERVER_FD = 6;
-  else if (argc - optind >= 2) {
-    if ((SERVER_FD = tcp_connect(argv[optind], argv[optind+1],
-				 opt_timeout)) == -1)
-      connfail();
-  }
+  else if (argc - optind >= 2)
+    connect_server(argv[optind], argv[optind+1]);
   else
     usage("Incorrect usage");
 

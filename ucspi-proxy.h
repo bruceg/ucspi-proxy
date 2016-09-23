@@ -47,6 +47,7 @@ extern void write_server(const char*, ssize_t);
 extern bool set_filter(int fd, filter_fn filter, eof_fn at_eof);
 extern bool del_filter(int fd);
 extern void log_line(const char* data, ssize_t size);
+extern void connect_server(const char* hostname, const char* port);
 
 /* Functions from tcp-connect.c */
 extern int tcp_connect(const char*, const char*, unsigned);
