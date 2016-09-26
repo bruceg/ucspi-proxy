@@ -28,22 +28,32 @@ int SERVER_FD = -1;
 struct filter_node
 {
   int fd;
-  filter_fn filter;
+  bool line_mode;
+  union {
+    filter_fn block;
+    line_fn line;
+  } filter;
   eof_fn at_eof;
   char* name;
+  str linebuf;
   
   struct filter_node* next;
 };
 
 struct filter_node* filters = 0;
 
-static bool new_filter(int fd, filter_fn filter, eof_fn at_eof)
+static bool new_filter(int fd, bool line_mode, filter_fn block, line_fn line, eof_fn at_eof)
 {
   struct filter_node* newnode = malloc(sizeof *filters);
   if(!newnode)
     return false;
+  memset(newnode, 0, sizeof *newnode);
   newnode->fd = fd;
-  newnode->filter = filter;
+  newnode->line_mode = line_mode;
+  if (line_mode)
+    newnode->filter.line = line;
+  else
+    newnode->filter.block = block;
   newnode->at_eof = at_eof;
   newnode->next = 0;
   if (fd == CLIENT_IN)
@@ -71,12 +81,28 @@ bool set_filter(int fd, filter_fn filter, eof_fn at_eof)
   struct filter_node* node;
   for (node = filters; node != 0; node = node->next) {
     if (node->fd == fd) {
-      node->filter = filter;
+      /* FIXME: flush buffer if going from line-buffered to not */
+      node->line_mode = false;
+      node->filter.block = filter;
       node->at_eof = at_eof;
       return true;
     }
   }
-  return new_filter(fd, filter, at_eof);
+  return new_filter(fd, false, filter, NULL, at_eof);
+}
+
+bool set_line_filter(int fd, line_fn filter)
+{
+  struct filter_node* node;
+  for (node = filters; node != 0; node = node->next) {
+    if (node->fd == fd) {
+      node->line_mode = true;
+      node->filter.line = line;
+      node->at_eof = NULL;
+      return true;
+    }
+  }
+  return new_filter(fd, true, NULL, filter, NULL);
 }
 
 bool del_filter(int fd)
@@ -89,12 +115,29 @@ bool del_filter(int fd)
 	prev->next = curr->next;
       else
 	filters = curr->next;
+      str_free(&curr->linebuf);
       free(curr->name);
       free(curr);
       return true;
     }
   }
   return false;
+}
+
+static void handle_fd_line(struct filter_node* filter, const char* buf, ssize_t rd)
+{
+  const char* end;
+  while ((end = memchr(buf, LF, rd)) != NULL) {
+    ssize_t len = end++ - buf;
+    if (len > 0 && buf[len - 1] == CR)
+      --len;
+    str_catb(&filter->linebuf, buf, len);
+    filter->filter.line(&filter->linebuf);
+    filter->linebuf.len = 0;
+    rd -= end - buf;
+    buf = end;
+  }
+  str_catb(&filter->linebuf, buf, rd);
 }
 
 static void handle_fd(struct filter_node* filter)
@@ -120,7 +163,10 @@ static void handle_fd(struct filter_node* filter)
       bytes_client_in += rd;
     else if (filter->fd == SERVER_FD)
       bytes_server_in += rd;
-    filter->filter(buf, rd);
+    if (filter->line_mode)
+      handle_fd_line(filter, buf, rd);
+    else
+      filter->filter.block(buf, rd);
   }
 }
 
@@ -160,6 +206,14 @@ void write_client(const char* data, ssize_t size)
 void write_server(const char* data, ssize_t size)
 {
   retry_write(data, size, SERVER_FD, "server", &bytes_server_out);
+}
+
+void write_line(const char* data, ssize_t size, void (*fn)(const char*, ssize_t))
+{
+  static str linebuf;
+  str_copyb(&linebuf, data, size);
+  str_catb(&linebuf, "\r\n", 2);
+  fn(linebuf.s, linebuf.len);
 }
 
 void log_line(const char* data, ssize_t size)

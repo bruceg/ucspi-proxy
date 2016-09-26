@@ -1,3 +1,5 @@
+- Added internal support for line buffering.
+
 -------------------------------------------------------------------------------
 Changes in version 1.0
 
