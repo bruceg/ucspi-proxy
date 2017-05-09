@@ -1,3 +1,5 @@
+- Added support for a data timeout.
+
 - Added internal support for line buffering.
 
 -------------------------------------------------------------------------------

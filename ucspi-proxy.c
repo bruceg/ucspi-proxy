@@ -20,7 +20,8 @@ static unsigned long bytes_server_in = 0;
 static unsigned long bytes_server_out = 0;
 int opt_verbose = 0;
 int opt_maxline = MAXLINE;
-static unsigned opt_timeout = 30;
+static unsigned opt_connect_timeout = 30;
+static unsigned opt_data_timeout = 0;
 pid_t pid;
 
 int SERVER_FD = -1;
@@ -276,7 +277,7 @@ static void connfail(void)
 
 void connect_server(const char* hostname, const char* port)
 {
-  if ((SERVER_FD = tcp_connect(hostname, port, opt_timeout)) == -1)
+  if ((SERVER_FD = tcp_connect(hostname, port, opt_connect_timeout)) == -1)
     connfail();
 }
 
@@ -285,7 +286,7 @@ static void parse_args(int argc, char* argv[])
   int opt;
   unsigned tmp;
   char* end;
-  while((opt = getopt(argc, argv, "vl:t:")) != EOF) {
+  while((opt = getopt(argc, argv, "vl:t:T:")) != EOF) {
     switch(opt) {
     case 'v':
       opt_verbose++;
@@ -299,8 +300,14 @@ static void parse_args(int argc, char* argv[])
     case 't':
       tmp = strtoul(optarg, &end, 10);
       if (tmp == 0 || *end != 0)
-	usage("Invalid timeout");
-      opt_timeout = tmp;
+	usage("Invalid connect timeout");
+      opt_connect_timeout = tmp;
+      break;
+    case 'T':
+      tmp = strtoul(optarg, &end, 10);
+      if (tmp == 0 || *end != 0)
+	usage("Invalid data timeout");
+      opt_data_timeout = tmp;
       break;
     default:
       usage("Unknown option.");
@@ -329,7 +336,9 @@ int main(int argc, char* argv[])
   pid = getpid();
   for(;;) {
     struct filter_node* filter;
+    struct timeval timeout = { opt_data_timeout, 0 };
     int maxfd = -1;
+    int nfd;
     FD_ZERO(&fds);
     for(filter = filters; filter; filter = filter->next) {
       int fd = filter->fd;
@@ -337,9 +346,13 @@ int main(int argc, char* argv[])
       if(fd > maxfd)
 	maxfd = fd;
     }
-    while(select(maxfd+1, &fds, 0, 0, 0) == -1) {
+    while ((nfd = select(maxfd+1, &fds, 0, 0, opt_data_timeout ? &timeout : NULL)) < 0) {
       if(errno != EINTR)
-	usage("select failed!");
+        usage("select failed!");
+    }
+    if (nfd == 0) {
+      msg1("Timed out");
+      break;
     }
     for(filter = filters; filter; filter = filter->next)
       if(FD_ISSET(filter->fd, &fds)) {
