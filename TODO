@@ -1,5 +1,3 @@
-- Switch from select to iopoll
-
 - Write/fix man pages
 
 - Support UCSPI PROTO other than TCP

@@ -38,6 +38,7 @@ struct filter_node
   struct filter_node* next;
 };
 
+int nfilters = 0;
 struct filter_node* filters = 0;
 
 static bool new_filter(int fd, filter_fn block, line_fn line, eof_fn at_eof)
@@ -68,6 +69,7 @@ static bool new_filter(int fd, filter_fn block, line_fn line, eof_fn at_eof)
       ptr = ptr->next;
     ptr->next = newnode;
   }
+  ++nfilters;
   return true;
 }
 
@@ -112,6 +114,7 @@ bool del_filter(int fd)
       str_free(&curr->linebuf);
       free(curr->name);
       free(curr);
+      --nfilters;
       return true;
     }
   }
@@ -327,7 +330,6 @@ static void parse_args(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
-  fd_set fds;
   signal(SIGALRM, SIG_IGN);
   signal(SIGHUP, SIG_IGN);
   signal(SIGPIPE, SIG_IGN);
@@ -336,26 +338,23 @@ int main(int argc, char* argv[])
   pid = getpid();
   for(;;) {
     struct filter_node* filter;
-    struct timeval timeout = { opt_data_timeout, 0 };
-    int maxfd = -1;
-    int nfd;
-    FD_ZERO(&fds);
-    for(filter = filters; filter; filter = filter->next) {
-      int fd = filter->fd;
-      FD_SET(fd, &fds);
-      if(fd > maxfd)
-	maxfd = fd;
+    iopoll_fd fds[nfilters];
+    int i;
+    for(i = 0, filter = filters; filter; ++i, filter = filter->next) {
+      fds[i].fd = filter->fd;
+      fds[i].events = IOPOLL_READ;
+      fds[i].revents = 0;
     }
-    while ((nfd = select(maxfd+1, &fds, 0, 0, opt_data_timeout ? &timeout : NULL)) < 0) {
+    while ((i = iopoll(fds, nfilters, opt_data_timeout * 1000)) < 0) {
       if(errno != EINTR)
-        usage("select failed!");
+        die1sys(111, "poll failed");
     }
-    if (nfd == 0) {
+    if (i == 0) {
       msg1("Timed out");
       break;
     }
-    for(filter = filters; filter; filter = filter->next)
-      if(FD_ISSET(filter->fd, &fds)) {
+    for(i = 0, filter = filters; filter; ++i, filter = filter->next)
+      if(fds[i].revents) {
 	handle_fd(filter);
 	break;
       }
