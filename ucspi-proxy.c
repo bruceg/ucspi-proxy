@@ -260,9 +260,11 @@ void usage(const char* message)
 {
   if(message)
     msg1(message);
-  obuf_put4s(&errbuf, "usage: ", program,
-	     " [-v] [-t timeout] [host port] ", filter_usage);
-  obuf_endl(&errbuf);
+  obuf_put5s(&errbuf, "usage: ", program, " [OPTIONS] [HOST PORT] ", filter_usage, "\n"
+    "  -v           Output verbose messages\n"
+    "  -t NUM       Time out connecting after NUM seconds\n"
+    "  -T NUM       Exit after NUM seconds of inactivity\n");
+  obuf_flush(&errbuf);
   exit(1);
 }
 
