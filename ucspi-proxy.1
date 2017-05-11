@@ -36,6 +36,12 @@ client programs.
 The maximum length of lines (from either server or client) to copy to
 the log. Defaults to 64.
 .TP
+.I \-s ADDRESS
+Set the local source address for outbound connections.
+Use
+.B auto
+to take the address from the original socket address.
+.TP
 .I \-t TIMEOUT
 When making an connection,
 .B ucspi-proxy

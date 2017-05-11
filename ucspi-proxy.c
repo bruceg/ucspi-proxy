@@ -22,6 +22,7 @@ int opt_verbose = 0;
 int opt_maxline = MAXLINE;
 static unsigned opt_connect_timeout = 30;
 static unsigned opt_data_timeout = 0;
+static const char* opt_source_addr = NULL;
 pid_t pid;
 
 int SERVER_FD = -1;
@@ -262,6 +263,7 @@ void usage(const char* message)
     msg1(message);
   obuf_put5s(&errbuf, "usage: ", program, " [OPTIONS] [HOST PORT] ", filter_usage, "\n"
     "  -v           Output verbose messages\n"
+    "  -s ADDR      Source address for outbound connections\n"
     "  -t NUM       Time out connecting after NUM seconds\n"
     "  -T NUM       Exit after NUM seconds of inactivity\n");
   obuf_flush(&errbuf);
@@ -282,7 +284,7 @@ static void connfail(void)
 
 void connect_server(const char* hostname, const char* port)
 {
-  if ((SERVER_FD = tcp_connect(hostname, port, opt_connect_timeout)) == -1)
+  if ((SERVER_FD = tcp_connect(hostname, port, opt_connect_timeout, opt_source_addr)) == -1)
     connfail();
 }
 
@@ -291,7 +293,7 @@ static void parse_args(int argc, char* argv[])
   int opt;
   unsigned tmp;
   char* end;
-  while((opt = getopt(argc, argv, "vl:t:T:")) != EOF) {
+  while((opt = getopt(argc, argv, "vl:s:t:T:")) != EOF) {
     switch(opt) {
     case 'v':
       opt_verbose++;
@@ -301,6 +303,9 @@ static void parse_args(int argc, char* argv[])
       if (tmp == 0 || *end != 0)
 	usage("Invalid maximum line length");
       opt_maxline = tmp;
+      break;
+    case 's':
+      opt_source_addr = optarg;
       break;
     case 't':
       tmp = strtoul(optarg, &end, 10);

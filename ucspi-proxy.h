@@ -53,7 +53,7 @@ extern void log_line(const char* data, ssize_t size);
 extern void connect_server(const char* hostname, const char* port);
 
 /* Functions from tcp-connect.c */
-extern int tcp_connect(const char*, const char*, unsigned);
+extern int tcp_connect(const char*, const char*, unsigned, const char*);
 
 /* Functions from relay-filter.c */
 extern void relay_init(int argc, char* argv[]);
