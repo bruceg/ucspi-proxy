@@ -62,13 +62,15 @@ static void handle_auth_plain_response(str* line, ssize_t offset)
   saw_auth_plain = 0;
   if (base64decode(line->s + offset, line->len - offset, &tmpstr)) {
     /* tmpstr should now contain "AUTHORIZATION\0AUTHENTICATION\0PASSWORD" */
-    if ((start = str_findfirst(&tmpstr, NUL)) >= 0
-	&& (end = str_findnext(&tmpstr, NUL, ++start)) > start) {
-      make_username(tmpstr.s + start, end - start, "AUTH PLAIN ");
-      str_splice(&tmpstr, start, end - start, &username);
-      line->len = offset;
-      base64encode(tmpstr.s, tmpstr.len, line);
-      str_catb(line, CRLF, 2);
+    if ((start = str_findfirst(&tmpstr, NUL)) >= 0) {
+      ++start;
+      if ((end = str_findnext(&tmpstr, NUL, start)) > start) {
+        make_username(tmpstr.s + start, end - start, "AUTH PLAIN ");
+        str_splice(&tmpstr, start, end - start, &username);
+        line->len = offset;
+        base64encode(tmpstr.s, tmpstr.len, line);
+        str_catb(line, CRLF, 2);
+      }
     }
   }
 }
