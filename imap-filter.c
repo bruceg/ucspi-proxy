@@ -15,22 +15,21 @@ extern const char* local_name;
 
 static str label;
 static str saved_label;
-static str linebuf;
 
-static int parse_label(void)
+static int parse_label(const str* line)
 {
   int end;
-  if ((end = str_findfirst(&linebuf, ' ')) <= 0) return 0;
-  str_copyb(&label, linebuf.s, end);
+  if ((end = str_findfirst(line, ' ')) <= 0) return 0;
+  str_copyb(&label, line->s, end);
   return end + 1;
 }
 
-static void handle_login(int offset)
+static void handle_login(str* line, int offset)
 {
   const char* start;
   const char* end;
 
-  start = linebuf.s + offset;
+  start = line->s + offset;
   while (isspace(*start))
     ++start;
   if (*start == '"') {
@@ -44,59 +43,45 @@ static void handle_login(int offset)
       ++end;
   }
   make_username(start, end - start, "LOGIN ");
-  str_splice(&linebuf, start-linebuf.s, end-start, &username);
+  str_splice(line, start-line->s, end-start, &username);
   str_copy(&saved_label, &label);
   str_truncate(&label, 0);
 }
 
-static void filter_client_line(void)
+static void filter_client_line(str* line)
 {
   int offset;
   const char* cmd;
 
-  if (!handle_auth_response(&linebuf, 0)) {
-    if ((offset = parse_label()) > 0) {
-      cmd = linebuf.s + offset;
+  if (!handle_auth_response(line, 0)) {
+    if ((offset = parse_label(line)) > 0) {
+      cmd = line->s + offset;
       /* If we see a "AUTHENTICATE" or "LOGIN" command, save the preceding
        * label for reference when looking for the corresponding "OK" */
       if(!strncasecmp(cmd, "AUTHENTICATE ", 13)) {
-	if (handle_auth_parameter(&linebuf, offset + 13))
+	if (handle_auth_parameter(line, offset + 13))
 	  str_copy(&saved_label, &label);
       }
       else if (!strncasecmp(cmd, "LOGIN ", 6))
-	handle_login(offset + 6);
+	handle_login(line, offset + 6);
     }
   }
+  write_line(line->s, line->len, write_server);
 }
 
-static void filter_client_data(char* data, ssize_t size)
-{
-  char* lf;
-  while ((lf = memchr(data, LF, size)) != 0) {
-    str_catb(&linebuf, data, lf - data + 1);
-    filter_client_line();
-    write_server(linebuf.s, linebuf.len);
-    linebuf.len = 0;
-    size -= lf - data + 1;
-    data = lf + 1;
-  }
-  str_catb(&linebuf, data, size);
-}
-
-static void filter_server_data(char* data, ssize_t size)
+static void filter_server_line(str* line)
 {
   if(saved_label.len > 0) {
     /* Skip continuation data */
-    if(data[0] != '+') {
+    if (line->s[0] != '+') {
       int resp;
       /* Check if the response is tagged with the saved label */
-      str_copyb(&linebuf, data, size);
-      resp = parse_label();
+      resp = parse_label(line);
       if(resp > 0) {
 	if(!str_diff(&label, &saved_label)) {
-	  log_line(data, size);
+	  log_line(line->s, line->len);
 	  /* Check if the response was an OK */
-	  if(!strncasecmp(linebuf.s + resp, "OK ", 3))
+	  if(!strncasecmp(line->s + resp, "OK ", 3))
 	    accept_client(username.s);
 	  else
 	    deny_client(username.s);
@@ -105,11 +90,11 @@ static void filter_server_data(char* data, ssize_t size)
       }
     }
   }
-  write_client(data, size);
+  write_line(line->s, line->len, write_client);
 }
 
 void imap_filter_init(void)
 {
-  set_filter(CLIENT_IN, filter_client_data, 0);
-  set_filter(SERVER_FD, filter_server_data, 0);
+  set_line_filter(CLIENT_IN, filter_client_line);
+  set_line_filter(SERVER_FD, filter_server_line);
 }
