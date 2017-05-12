@@ -21,7 +21,7 @@ static unsigned long bytes_server_out = 0;
 int opt_verbose = 0;
 int opt_maxline = MAXLINE;
 static unsigned opt_connect_timeout = 30;
-static unsigned opt_data_timeout = 0;
+static long opt_data_timeout = -1;
 static const char* opt_source_addr = NULL;
 pid_t pid;
 
@@ -314,8 +314,8 @@ static void parse_args(int argc, char* argv[])
       opt_connect_timeout = tmp;
       break;
     case 'T':
-      tmp = strtoul(optarg, &end, 10);
-      if (tmp == 0 || *end != 0)
+      tmp = strtol(optarg, &end, 10);
+      if (tmp <= 0 || *end != 0)
 	usage("Invalid data timeout");
       opt_data_timeout = tmp;
       break;
