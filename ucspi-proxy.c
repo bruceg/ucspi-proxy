@@ -212,7 +212,7 @@ void write_server(const char* data, ssize_t size)
   retry_write(data, size, SERVER_FD, "server", &bytes_server_out);
 }
 
-void write_line(const char* data, ssize_t size, void (*fn)(const char*, ssize_t))
+void write_line(const char* data, ssize_t size, write_fn fn)
 {
   static str linebuf;
   str_copyb(&linebuf, data, size);

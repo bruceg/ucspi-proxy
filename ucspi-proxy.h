@@ -26,6 +26,7 @@ typedef int bool;
 typedef void (*filter_fn)(char*, ssize_t);
 typedef void (*line_fn)(struct str*);
 typedef void (*eof_fn)(void);
+typedef void (*write_fn)(const char*, ssize_t);
 
 /* Functions and globals declared by the filter */
 extern const char program[];
