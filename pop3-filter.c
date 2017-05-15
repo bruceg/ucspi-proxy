@@ -46,7 +46,6 @@ static void filter_client_line(str* line)
     else if (str_case_starts(line, "USER "))
       handle_user(line);
   }
-  write_line(line->s, line->len, write_server);
 }
 
 static void filter_server_line(str* line)
@@ -62,11 +61,10 @@ static void filter_server_line(str* line)
       saw_command = 0;
     }
   }
-  write_line(line->s, line->len, write_client);
 }
 
 void pop3_filter_init(void)
 {
-  set_line_filter(CLIENT_IN, filter_client_line);
-  set_line_filter(SERVER_FD, filter_server_line);
+  set_line_filter(CLIENT_IN, filter_client_line, write_server);
+  set_line_filter(SERVER_FD, filter_server_line, write_client);
 }

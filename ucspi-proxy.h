@@ -48,7 +48,7 @@ extern void write_client(const char*, ssize_t);
 extern void write_server(const char*, ssize_t);
 extern void write_line(const char* data, ssize_t size, void (*fn)(const char*, ssize_t));
 extern bool set_filter(int fd, filter_fn filter, eof_fn at_eof);
-extern bool set_line_filter(int fd, line_fn filter);
+extern bool set_line_filter(int fd, line_fn filter, write_fn writer);
 extern bool del_filter(int fd);
 extern void log_line(const char* data, ssize_t size);
 extern void connect_server(const char* hostname, const char* port);

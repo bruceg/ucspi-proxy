@@ -32,6 +32,7 @@ struct filter_node
   int fd;
   filter_fn filter_block;
   line_fn filter_line;
+  write_fn writer;
   eof_fn at_eof;
   char* name;
   str linebuf;
@@ -42,7 +43,7 @@ struct filter_node
 int nfilters = 0;
 struct filter_node* filters = 0;
 
-static bool new_filter(int fd, filter_fn block, line_fn line, eof_fn at_eof)
+static bool new_filter(int fd, filter_fn block, line_fn line, write_fn writer, eof_fn at_eof)
 {
   struct filter_node* newnode = malloc(sizeof *filters);
   if(!newnode)
@@ -51,6 +52,7 @@ static bool new_filter(int fd, filter_fn block, line_fn line, eof_fn at_eof)
   newnode->fd = fd;
   newnode->filter_block = block;
   newnode->filter_line = line;
+  newnode->writer = writer;
   newnode->at_eof = at_eof;
   newnode->next = 0;
   if (fd == CLIENT_IN)
@@ -85,21 +87,22 @@ bool set_filter(int fd, filter_fn filter, eof_fn at_eof)
       return true;
     }
   }
-  return new_filter(fd, filter, NULL, at_eof);
+  return new_filter(fd, filter, NULL, NULL, at_eof);
 }
 
-bool set_line_filter(int fd, line_fn filter)
+bool set_line_filter(int fd, line_fn filter, write_fn writer)
 {
   struct filter_node* node;
   for (node = filters; node != 0; node = node->next) {
     if (node->fd == fd) {
       node->filter_block = NULL;
       node->filter_line = filter;
+      node->writer = writer;
       node->at_eof = NULL;
       return true;
     }
   }
-  return new_filter(fd, NULL, filter, NULL);
+  return new_filter(fd, NULL, filter, writer, NULL);
 }
 
 bool del_filter(int fd)
@@ -131,6 +134,10 @@ static void handle_fd_line(struct filter_node* filter, char* buf, ssize_t rd)
       --len;
     str_catb(&filter->linebuf, buf, len);
     filter->filter_line(&filter->linebuf);
+    if (filter->writer != NULL && filter->linebuf.len > 0) {
+      str_catb(&filter->linebuf, CRLF, 2);
+      filter->writer(filter->linebuf.s, filter->linebuf.len);
+    }
     filter->linebuf.len = 0;
     rd -= end - buf;
     buf = end;
