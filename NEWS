@@ -1,3 +1,6 @@
+-------------------------------------------------------------------------------
+Changes in version 1.1
+
 - Added support for setting the source address on outbound connections.
 
 - Added support for a data timeout.
