@@ -1,3 +1,5 @@
+- Fixed bug with ucspi-proxy-pop3 handling of bare AUTH commands.
+
 -------------------------------------------------------------------------------
 Changes in version 1.1
 

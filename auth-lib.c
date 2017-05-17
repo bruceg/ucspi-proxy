@@ -36,11 +36,6 @@ static const char* skipspace(const char* ptr)
   return ptr;
 }
 
-static int iseol(char ch)
-{
-  return ch == CR || ch == LF;
-}
-
 static void handle_auth_login_response(str* line, ssize_t offset)
 {
   saw_auth_login = 0;
@@ -89,19 +84,20 @@ int handle_auth_response(str* line, ssize_t offset)
 int handle_auth_parameter(str* line, ssize_t offset)
 {
   const char* ptr;
+  const char const* end = line->s + line->len;
 
   ptr = skipspace(line->s + offset);
   /* No parameter, so just pass it through. */
-  if (iseol(*ptr))
+  if (ptr >= end)
     return 0;
   if (strncasecmp(ptr, "LOGIN", 5) == 0) {
-    if (ptr[5] == ' ' && !iseol(*(ptr = skipspace(ptr + 5))))
+    if (ptr[5] == ' ' && (ptr = skipspace(ptr + 5)) < end)
       handle_auth_login_response(line, ptr - line->s);
     else
       saw_auth_login = 1;
   }
   else if (strncasecmp(ptr, "PLAIN", 5) == 0) {
-    if (ptr[5] == ' ' && !iseol(*(ptr = skipspace(ptr + 5))))
+    if (ptr[5] == ' ' && (ptr = skipspace(ptr + 5)) < end)
       handle_auth_plain_response(line, ptr - line->s);
     else
       saw_auth_plain = 1;
