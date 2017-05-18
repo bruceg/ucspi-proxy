@@ -45,7 +45,6 @@ static void handle_auth_login_response(str* line, ssize_t offset)
     make_username(tmpstr.s, tmpstr.len, "AUTH LOGIN ");
     line->len = offset;
     base64encode(username.s, username.len, line);
-    str_catb(line, CRLF, 2);
   }
 }
 
@@ -64,7 +63,6 @@ static void handle_auth_plain_response(str* line, ssize_t offset)
         str_splice(&tmpstr, start, end - start, &username);
         line->len = offset;
         base64encode(tmpstr.s, tmpstr.len, line);
-        str_catb(line, CRLF, 2);
       }
     }
   }
