@@ -1,3 +1,5 @@
+- Fixed long-standing bug in handling parameter of AUTH LOGIN command.
+
 - Fixed bug with ucspi-proxy-pop3 handling of bare AUTH commands.
 
 -------------------------------------------------------------------------------

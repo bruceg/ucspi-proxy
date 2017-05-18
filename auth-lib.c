@@ -39,7 +39,7 @@ static const char* skipspace(const char* ptr)
 static void handle_auth_login_response(str* line, ssize_t offset)
 {
   saw_auth_login = 0;
-  if (!base64decode(line->s + offset, line->len + offset, &tmpstr))
+  if (!base64decode(line->s + offset, line->len - offset, &tmpstr))
     username.len = 0;
   else {
     make_username(tmpstr.s, tmpstr.len, "AUTH LOGIN ");
